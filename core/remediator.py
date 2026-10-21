@@ -2021,34 +2021,116 @@ def _add_docx_header_and_signatures(doc_obj: docx.Document, section_title: str, 
     r_sub.font.size = Pt(8.5)
 
 
+from docx.oxml import OxmlElement, parse_xml
+from docx.oxml.ns import qn, nsdecls
+
+def _style_docx_cell(cell, text: str, bold: bool = False, align=WD_ALIGN_PARAGRAPH.LEFT, fill_hex: Optional[str] = None, font_size_pt: float = 7.5, italic: bool = False):
+    """Styles a table cell with MICPROJECT formatting: Arial font, padding and optional shading (grisado)."""
+    cell.text = ""
+    p = cell.paragraphs[0]
+    p.alignment = align
+    p.paragraph_format.space_before = Pt(0)
+    p.paragraph_format.space_after = Pt(0)
+    p.paragraph_format.line_spacing = 1.05
+    run = p.add_run(str(text))
+    run.font.name = "Arial"
+    run.font.size = Pt(font_size_pt)
+    run.font.bold = bool(bold)
+    run.font.italic = italic
+
+    # Compact cell margins/padding (25 dxa = 1.25 pt top/bottom, 50 dxa = 2.5 pt left/right)
+    tcPr = cell._tc.get_or_add_tcPr()
+    tcMar = OxmlElement('w:tcMar')
+    for m, val in [('top', 25), ('bottom', 25), ('left', 50), ('right', 50)]:
+        node = OxmlElement(f'w:{m}')
+        node.set(qn('w:w'), str(val))
+        node.set(qn('w:type'), 'dxa')
+        tcMar.append(node)
+    tcPr.append(tcMar)
+
+    if fill_hex:
+        shd = parse_xml(f'<w:shd {nsdecls("w")} w:fill="{fill_hex}"/>')
+        tcPr.append(shd)
+
+
+def _apply_docx_table_chrome(table):
+    """Sets table alignment to center and applies subtle borders matching MICPROJECT (#CBD5E1 / #E2E8F0)."""
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    tblPr = table._tbl.tblPr
+    borders = parse_xml(
+        f'<w:tblBorders {nsdecls("w")}>'
+        f'  <w:top w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>'
+        f'  <w:left w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>'
+        f'  <w:bottom w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>'
+        f'  <w:right w:val="single" w:sz="4" w:space="0" w:color="CBD5E1"/>'
+        f'  <w:insideH w:val="single" w:sz="4" w:space="0" w:color="E2E8F0"/>'
+        f'  <w:insideV w:val="single" w:sz="4" w:space="0" w:color="E2E8F0"/>'
+        f'</w:tblBorders>'
+    )
+    tblPr.append(borders)
+
+
+def _add_docx_header_and_signatures(doc_obj: docx.Document, section_title: str, car: Dict[str, Any]):
+    """Adds MICPROJECT CabeceraEECC at top of section"""
+    p_ent = doc_obj.add_paragraph()
+    r_ent = p_ent.add_run(car["razonSocial"].upper() + (f"  |  RNOS: {car['rnos']}  |  CUIT: {car['cuit']}" if car.get("rnos") else f"  |  CUIT: {car['cuit']}"))
+    r_ent.bold = True
+    r_ent.font.name = "Arial"
+    r_ent.font.size = Pt(8.5)
+
+    p_tit = doc_obj.add_paragraph()
+    p_tit.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_tit.paragraph_format.space_before = Pt(2)
+    p_tit.paragraph_format.space_after = Pt(2)
+    r_tit = p_tit.add_run(section_title.upper() + "\n")
+    r_tit.bold = True
+    r_tit.font.name = "Arial"
+    r_tit.font.size = Pt(10.5)
+    r_sub = p_tit.add_run(f"Por el ejercicio finalizado el {car['fechaCierre']} comparativo con el ejercicio anterior ({car['fechaComparativo']}). En pesos en moneda homogénea (Nota 1.3).")
+    r_sub.italic = True
+    r_sub.font.name = "Arial"
+    r_sub.font.size = Pt(8.0)
+
+
 def _add_docx_doble_firma(doc_obj: docx.Document, car: Dict[str, Any]):
-    """Adds MICPROJECT DobleFirmaEECC at bottom of section"""
+    """Adds MICPROJECT DobleFirmaEECC at bottom of section with centered alignment"""
     p_fn = doc_obj.add_paragraph()
     p_fn.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_fn.paragraph_format.space_before = Pt(6)
+    p_fn.paragraph_format.space_after = Pt(4)
     r_fn = p_fn.add_run("Las Notas y los Anexos que se acompañan forman parte integrante de estos Estados Contables.")
     r_fn.italic = True
-    r_fn.font.size = Pt(8)
+    r_fn.font.name = "Arial"
+    r_fn.font.size = Pt(7.5)
 
     t_sig = doc_obj.add_table(rows=1, cols=2)
     t_sig.alignment = WD_TABLE_ALIGNMENT.CENTER
-    c0 = t_sig.cell(0, 0).paragraphs[0]
-    c0.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r0 = c0.add_run(f"Firmado a los efectos de su identificación con mi informe de fecha {car['fechaCertificacion']}.-\n\n............................................................\n{car['auditorNombre']}\nContador Público — {car['auditorMatricula']}")
-    r0.font.size = Pt(8)
-
-    c1 = t_sig.cell(0, 1).paragraphs[0]
-    c1.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r1 = c1.add_run(f"\n\n............................................................\n{car['firmanteNombre']}\n{car['firmanteCargo']} — {car['razonSocial'][:45]}")
-    r1.font.size = Pt(8)
+    _style_docx_cell(
+        t_sig.cell(0, 0),
+        f"Firmado a los efectos de su identificación con mi informe de fecha {car['fechaCertificacion']}.-\n\n\n............................................................\n{car['auditorNombre']}\nContador Público — {car['auditorMatricula']}",
+        bold=False,
+        align=WD_ALIGN_PARAGRAPH.CENTER,
+        font_size_pt=7.5
+    )
+    _style_docx_cell(
+        t_sig.cell(0, 1),
+        f"\n\n\n............................................................\n{car['firmanteNombre']}\n{car['firmanteCargo']} — {car['razonSocial'][:45]}",
+        bold=False,
+        align=WD_ALIGN_PARAGRAPH.CENTER,
+        font_size_pt=7.5
+    )
 
 
 def _add_docx_revisores_firmas(doc_obj: docx.Document):
     """Adds centered 3-signature block for Comisión Revisora de Cuentas"""
     p_fn = doc_obj.add_paragraph()
     p_fn.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_fn.paragraph_format.space_before = Pt(8)
+    p_fn.paragraph_format.space_after = Pt(4)
     r_fn = p_fn.add_run("Por la Comisión Revisora de Cuentas / Comisión Fiscalizadora")
     r_fn.italic = True
-    r_fn.font.size = Pt(8.5)
+    r_fn.font.name = "Arial"
+    r_fn.font.size = Pt(8.0)
 
     t_sig = doc_obj.add_table(rows=1, cols=3)
     t_sig.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -2058,24 +2140,23 @@ def _add_docx_revisores_firmas(doc_obj: docx.Document):
         "............................................\nRevisor/a de Cuentas\nComisión Revisora",
     ]
     for i, mem in enumerate(members):
-        c = t_sig.cell(0, i).paragraphs[0]
-        c.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = c.add_run(mem)
-        r.font.size = Pt(8)
+        _style_docx_cell(t_sig.cell(0, i), mem, align=WD_ALIGN_PARAGRAPH.CENTER, font_size_pt=7.5)
 
 
 def _add_docx_auditor_firma(doc_obj: docx.Document, car: Dict[str, Any]):
     """Adds centered signature block for Auditor Independiente (RT 37)"""
     p_fn = doc_obj.add_paragraph()
     p_fn.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_fn.paragraph_format.space_before = Pt(10)
     r_fn = p_fn.add_run(
-        f"\nCiudad Autónoma de Buenos Aires, {car['fechaCertificacion']}.-\n\n\n"
+        f"Ciudad Autónoma de Buenos Aires, {car['fechaCertificacion']}.-\n\n\n"
         f"............................................................\n"
         f"{car['auditorNombre']}\n"
         f"Contador Público — {car['auditorMatricula']}\n"
         f"Socio / Auditor Independiente"
     )
-    r_fn.font.size = Pt(8.5)
+    r_fn.font.name = "Arial"
+    r_fn.font.size = Pt(8.0)
 
 
 def _build_micproject_docx(
@@ -2085,26 +2166,33 @@ def _build_micproject_docx(
     informe_auditor_parrafos: List[Tuple[str, str]],
     applied_changes: List[Dict[str, str]]
 ):
+    """
+    Builds the official DOCX file using exact MICPROJECT criteria:
+    - Shading (grisado F1F5F9 en headers y E2E8F0 en subtotales/totales)
+    - Cuadros centrados con bordes sutiles (#CBD5E1)
+    - Un cuadro por hoja con márgenes optimizados para garantizar que cada estado entre en una sola página
+    - Orden normativo estricto con Resumen de Mejoras al final
+    """
     os.makedirs(os.path.dirname(os.path.abspath(output_docx_path)), exist_ok=True)
     d = docx.Document()
     car = eecc["caratulaData"]
     closing_date = car["fechaCierre"]
     comp_date = car["fechaComparativo"]
 
-    # Section 0: PORTRAIT (Carátula, Resumen Mejoras, Memoria) - Generous 30mm side margins
+    # Section 0: PORTRAIT (Carátula y Memoria) - 25mm side margins
     sec0 = d.sections[0]
     sec0.orientation = WD_ORIENT.PORTRAIT
     sec0.page_width = Mm(210)
     sec0.page_height = Mm(297)
-    sec0.top_margin = Mm(20)
-    sec0.bottom_margin = Mm(20)
-    sec0.left_margin = Mm(30)
-    sec0.right_margin = Mm(30)
+    sec0.top_margin = Mm(15)
+    sec0.bottom_margin = Mm(15)
+    sec0.left_margin = Mm(25)
+    sec0.right_margin = Mm(25)
 
-    # 1. CARÁTULA (Portrait)
+    # 1. CARÁTULA (Portrait - Hoja 1)
     _add_docx_header_and_signatures(d, "CARÁTULA INSTITUCIONAL — ESTADOS CONTABLES", car)
     t_car = d.add_table(rows=6, cols=2)
-    t_car.style = "Table Grid"
+    _apply_docx_table_chrome(t_car)
     car_items = [
         ("Denominación de la Entidad:", car["razonSocial"]),
         ("Domicilio Legal:", car["domicilioLegal"]),
@@ -2114,228 +2202,306 @@ def _build_micproject_docx(
         ("Unidad de Medida:", car["moneda"]),
     ]
     for idx_i, (k, v) in enumerate(car_items):
-        t_car.cell(idx_i, 0).text = k
-        t_car.cell(idx_i, 1).text = v
+        _style_docx_cell(t_car.cell(idx_i, 0), k, bold=True, align=WD_ALIGN_PARAGRAPH.LEFT, fill_hex="F8FAFC", font_size_pt=8.0)
+        _style_docx_cell(t_car.cell(idx_i, 1), v, bold=(idx_i == 0), align=WD_ALIGN_PARAGRAPH.LEFT, font_size_pt=8.0)
     _add_docx_doble_firma(d, car)
 
-    # 3. MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN (Portrait - Justified & 30mm Margins)
+    # 2. MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN (Portrait - Hoja 2)
     d.add_page_break()
     _add_docx_header_and_signatures(d, "MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN", car)
     memoria_txt = eecc.get("memoriaTexto", "")
     for par in memoria_txt.split("\n\n"):
         p_c = par.strip()
         if p_c:
-            p_m = d.add_paragraph(p_c)
+            p_m = d.add_paragraph()
             p_m.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            p_m.paragraph_format.space_before = Pt(0)
+            p_m.paragraph_format.space_after = Pt(4)
+            p_m.paragraph_format.line_spacing = 1.15
+            r = p_m.add_run(p_c)
+            r.font.name = "Arial"
+            r.font.size = Pt(9.0)
     _add_docx_doble_firma(d, car)
 
-    # Switch to Landscape for Financial Statements (ESP, EERR, EEPN, EFE) - 15mm margins
-    sec_land = d.add_section()
-    sec_land.orientation = WD_ORIENT.LANDSCAPE
-    sec_land.page_width = Mm(297)
-    sec_land.page_height = Mm(210)
-    sec_land.top_margin = Mm(15)
-    sec_land.bottom_margin = Mm(15)
-    sec_land.left_margin = Mm(15)
-    sec_land.right_margin = Mm(15)
+    # Helper function to add a Landscape Section with MICPROJECT margins (9mm all around)
+    def add_landscape_section(doc):
+        sec = doc.add_section()
+        sec.orientation = WD_ORIENT.LANDSCAPE
+        sec.page_width = Mm(297)
+        sec.page_height = Mm(210)
+        sec.top_margin = Mm(9)
+        sec.bottom_margin = Mm(9)
+        sec.left_margin = Mm(9)
+        sec.right_margin = Mm(9)
+        return sec
 
-    # 4. ESTADO DE SITUACIÓN PATRIMONIAL (6-column side-by-side)
+    def add_portrait_section(doc):
+        sec = doc.add_section()
+        sec.orientation = WD_ORIENT.PORTRAIT
+        sec.page_width = Mm(210)
+        sec.page_height = Mm(297)
+        sec.top_margin = Mm(15)
+        sec.bottom_margin = Mm(15)
+        sec.left_margin = Mm(25)
+        sec.right_margin = Mm(25)
+        return sec
+
+    # Switch to Landscape for Financial Statements (ESP, EERR, EEPN, EFE)
+    add_landscape_section(d)
+
+    # 3. ESTADO DE SITUACIÓN PATRIMONIAL (Landscape - Un cuadro por hoja)
     _add_docx_header_and_signatures(d, "ESTADO DE SITUACIÓN PATRIMONIAL", car)
     esp = eecc["esp"]
-    left_rows = [("ACTIVO CORRIENTE", "", "")] + [(f"{r['label']} ({r['nota']})" if r.get("nota") else r["label"], fmt_num_cell(r["actual"]), fmt_num_cell(r["anterior"])) for r in esp["activoCorriente"]] + [("Total del Activo Corriente", fmt_num_cell(esp["totalActivoCorriente"]["actual"]), fmt_num_cell(esp["totalActivoCorriente"]["anterior"])), ("ACTIVO NO CORRIENTE", "", "")] + [(f"{r['label']} ({r['nota']})" if r.get("nota") else r["label"], fmt_num_cell(r["actual"]), fmt_num_cell(r["anterior"])) for r in esp["activoNoCorriente"]] + [("Total del Activo No Corriente", fmt_num_cell(esp["totalActivoNoCorriente"]["actual"]), fmt_num_cell(esp["totalActivoNoCorriente"]["anterior"]))]
-    right_rows = [("PASIVO CORRIENTE", "", "")] + [(f"{r['label']} ({r['nota']})" if r.get("nota") else r["label"], fmt_num_cell(r["actual"]), fmt_num_cell(r["anterior"])) for r in esp["pasivoCorriente"]] + [("Total del Pasivo Corriente", fmt_num_cell(esp["totalPasivoCorriente"]["actual"]), fmt_num_cell(esp["totalPasivoCorriente"]["anterior"])), ("PASIVO NO CORRIENTE", "", ""), ("Total del Pasivo No Corriente", fmt_num_cell(esp["totalPasivoNoCorriente"]["actual"], True), fmt_num_cell(esp["totalPasivoNoCorriente"]["anterior"], True)), ("Total del Pasivo", fmt_num_cell(esp["totalPasivo"]["actual"]), fmt_num_cell(esp["totalPasivo"]["anterior"])), ("PATRIMONIO NETO (según estado correspondiente)", fmt_num_cell(esp["patrimonioNeto"]["actual"]), fmt_num_cell(esp["patrimonioNeto"]["anterior"]))]
+    left_rows = [("ACTIVO CORRIENTE", "", "", True)] + [(f"{r['label']} ({r['nota']})" if r.get("nota") else r["label"], fmt_num_cell(r["actual"]), fmt_num_cell(r["anterior"]), False) for r in esp["activoCorriente"]] + [("Total del Activo Corriente", fmt_num_cell(esp["totalActivoCorriente"]["actual"]), fmt_num_cell(esp["totalActivoCorriente"]["anterior"]), True), ("ACTIVO NO CORRIENTE", "", "", True)] + [(f"{r['label']} ({r['nota']})" if r.get("nota") else r["label"], fmt_num_cell(r["actual"]), fmt_num_cell(r["anterior"]), False) for r in esp["activoNoCorriente"]] + [("Total del Activo No Corriente", fmt_num_cell(esp["totalActivoNoCorriente"]["actual"]), fmt_num_cell(esp["totalActivoNoCorriente"]["anterior"]), True)]
+    right_rows = [("PASIVO CORRIENTE", "", "", True)] + [(f"{r['label']} ({r['nota']})" if r.get("nota") else r["label"], fmt_num_cell(r["actual"]), fmt_num_cell(r["anterior"]), False) for r in esp["pasivoCorriente"]] + [("Total del Pasivo Corriente", fmt_num_cell(esp["totalPasivoCorriente"]["actual"]), fmt_num_cell(esp["totalPasivoCorriente"]["anterior"]), True), ("PASIVO NO CORRIENTE", "", "", True), ("Total del Pasivo No Corriente", fmt_num_cell(esp["totalPasivoNoCorriente"]["actual"], True), fmt_num_cell(esp["totalPasivoNoCorriente"]["anterior"], True), True), ("Total del Pasivo", fmt_num_cell(esp["totalPasivo"]["actual"]), fmt_num_cell(esp["totalPasivo"]["anterior"]), True), ("PATRIMONIO NETO (según estado correspondiente)", fmt_num_cell(esp["patrimonioNeto"]["actual"]), fmt_num_cell(esp["patrimonioNeto"]["anterior"]), True)]
 
     max_l = max(len(left_rows), len(right_rows))
     while len(left_rows) < max_l:
-        left_rows.append(("", "", ""))
+        left_rows.append(("", "", "", False))
     while len(right_rows) < max_l:
-        right_rows.append(("", "", ""))
+        right_rows.append(("", "", "", False))
 
     t_esp = d.add_table(rows=max_l + 2, cols=6)
-    t_esp.style = "Table Grid"
+    _apply_docx_table_chrome(t_esp)
     hdr_esp = ["ACTIVO", closing_date, comp_date, "PASIVO Y PATRIMONIO NETO", closing_date, comp_date]
     for c_i, h_txt in enumerate(hdr_esp):
-        t_esp.cell(0, c_i).text = h_txt
+        _style_docx_cell(t_esp.cell(0, c_i), h_txt, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, fill_hex="F1F5F9", font_size_pt=7.5)
+
     for r_i in range(max_l):
-        for c_i, val in enumerate(list(left_rows[r_i]) + list(right_rows[r_i])):
-            t_esp.cell(r_i + 1, c_i).text = val
+        l_item = left_rows[r_i]
+        r_item = right_rows[r_i]
+        is_bg_l = l_item[3] or "Total" in l_item[0] or "ACTIVO" in l_item[0]
+        is_bg_r = r_item[3] or "Total" in r_item[0] or "PASIVO" in r_item[0] or "PATRIMONIO" in r_item[0]
+
+        _style_docx_cell(t_esp.cell(r_i + 1, 0), l_item[0], bold=is_bg_l, align=WD_ALIGN_PARAGRAPH.LEFT, fill_hex="E2E8F0" if is_bg_l else None, font_size_pt=7.0)
+        _style_docx_cell(t_esp.cell(r_i + 1, 1), l_item[1], bold=is_bg_l, align=WD_ALIGN_PARAGRAPH.RIGHT, fill_hex="E2E8F0" if is_bg_l else None, font_size_pt=7.0)
+        _style_docx_cell(t_esp.cell(r_i + 1, 2), l_item[2], bold=is_bg_l, align=WD_ALIGN_PARAGRAPH.RIGHT, fill_hex="E2E8F0" if is_bg_l else None, font_size_pt=7.0)
+
+        _style_docx_cell(t_esp.cell(r_i + 1, 3), r_item[0], bold=is_bg_r, align=WD_ALIGN_PARAGRAPH.LEFT, fill_hex="E2E8F0" if is_bg_r else None, font_size_pt=7.0)
+        _style_docx_cell(t_esp.cell(r_i + 1, 4), r_item[1], bold=is_bg_r, align=WD_ALIGN_PARAGRAPH.RIGHT, fill_hex="E2E8F0" if is_bg_r else None, font_size_pt=7.0)
+        _style_docx_cell(t_esp.cell(r_i + 1, 5), r_item[2], bold=is_bg_r, align=WD_ALIGN_PARAGRAPH.RIGHT, fill_hex="E2E8F0" if is_bg_r else None, font_size_pt=7.0)
+
     tot_esp_row = ["TOTAL DEL ACTIVO", fmt_num_cell(esp["totalActivo"]["actual"]), fmt_num_cell(esp["totalActivo"]["anterior"]), "TOTAL DEL PASIVO Y PATRIMONIO NETO", fmt_num_cell(esp["totalPasivoYPN"]["actual"]), fmt_num_cell(esp["totalPasivoYPN"]["anterior"])]
     for c_i, val in enumerate(tot_esp_row):
-        t_esp.cell(max_l + 1, c_i).text = val
+        _style_docx_cell(t_esp.cell(max_l + 1, c_i), val, bold=True, align=WD_ALIGN_PARAGRAPH.RIGHT if c_i in [1, 2, 4, 5] else WD_ALIGN_PARAGRAPH.LEFT, fill_hex="E2E8F0", font_size_pt=7.2)
     _add_docx_doble_firma(d, car)
 
-    # 5. EERR
+    # 4. EERR (Landscape - Un cuadro por hoja)
     d.add_page_break()
     _add_docx_header_and_signatures(d, eecc["eerr"]["titulo"], car)
     er_filas = eecc["eerr"]["filas"]
     t_er = d.add_table(rows=len(er_filas) + 1, cols=4)
-    t_er.style = "Table Grid"
+    _apply_docx_table_chrome(t_er)
     for c_i, h_txt in enumerate(["Rubros / Conceptos", "Nota / Anexo", closing_date, comp_date]):
-        t_er.cell(0, c_i).text = h_txt
+        _style_docx_cell(t_er.cell(0, c_i), h_txt, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, fill_hex="F1F5F9", font_size_pt=7.5)
+
     for r_i, r in enumerate(er_filas, start=1):
-        t_er.cell(r_i, 0).text = r["label"]
-        t_er.cell(r_i, 1).text = r.get("nota", "")
-        t_er.cell(r_i, 2).text = "" if r["isHeader"] else fmt_num_cell(r["actual"], True)
-        t_er.cell(r_i, 3).text = "" if r["isHeader"] else fmt_num_cell(r["anterior"], True)
+        is_h = r.get("isHeader", False)
+        is_t = r.get("isTotal", False) or "RESULTADO" in r["label"].upper() or "TOTAL" in r["label"].upper()
+        f_hex = "E2E8F0" if (is_h or is_t) else None
+        _style_docx_cell(t_er.cell(r_i, 0), r["label"], bold=(is_h or is_t), align=WD_ALIGN_PARAGRAPH.LEFT, fill_hex=f_hex, font_size_pt=7.2)
+        _style_docx_cell(t_er.cell(r_i, 1), r.get("nota", ""), bold=False, align=WD_ALIGN_PARAGRAPH.CENTER, fill_hex=f_hex, font_size_pt=7.0)
+        _style_docx_cell(t_er.cell(r_i, 2), "" if is_h else fmt_num_cell(r["actual"], True), bold=is_t, align=WD_ALIGN_PARAGRAPH.RIGHT, fill_hex=f_hex, font_size_pt=7.2)
+        _style_docx_cell(t_er.cell(r_i, 3), "" if is_h else fmt_num_cell(r["anterior"], True), bold=is_t, align=WD_ALIGN_PARAGRAPH.RIGHT, fill_hex=f_hex, font_size_pt=7.2)
     _add_docx_doble_firma(d, car)
 
-    # 6. EEPN
+    # 5. EEPN (Landscape - Un cuadro por hoja)
     d.add_page_break()
     _add_docx_header_and_signatures(d, eecc["eepn"]["titulo"], car)
     eepn_filas = eecc["eepn"]["filas"]
     t_eepn = d.add_table(rows=len(eepn_filas) + 1, cols=8)
-    t_eepn.style = "Table Grid"
+    _apply_docx_table_chrome(t_eepn)
     for c_i, h_txt in enumerate(["Concepto", "Capital / Aportes", "Ajuste Capital", "Total Aportes", "Reservados", "No Asignados", f"Total {closing_date}", f"Total {comp_date}"]):
-        t_eepn.cell(0, c_i).text = h_txt
+        _style_docx_cell(t_eepn.cell(0, c_i), h_txt, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, fill_hex="F1F5F9", font_size_pt=7.2)
+
     for r_i, r in enumerate(eepn_filas, start=1):
+        is_t = "SALDO" in r["concepto"].upper() or "TOTAL" in r["concepto"].upper()
+        f_hex = "E2E8F0" if is_t else None
         vals = [r["concepto"], fmt_num_cell(r["capital"], True), fmt_num_cell(r["ajuste"], True), fmt_num_cell(r["totalAportes"], True), fmt_num_cell(r["reservados"], True), fmt_num_cell(r["noAsignados"], True), fmt_num_cell(r["totalActual"], True), fmt_num_cell(r["totalComparativo"], True)]
         for c_i, v in enumerate(vals):
-            t_eepn.cell(r_i, c_i).text = v
+            _style_docx_cell(t_eepn.cell(r_i, c_i), v, bold=is_t, align=WD_ALIGN_PARAGRAPH.LEFT if c_i == 0 else WD_ALIGN_PARAGRAPH.RIGHT, fill_hex=f_hex, font_size_pt=7.0)
     _add_docx_doble_firma(d, car)
 
-    # 7. EFE
+    # 6. EFE (Landscape - Un cuadro por hoja ajustado para entrar exactamente en 1 página)
     d.add_page_break()
     _add_docx_header_and_signatures(d, eecc["efe"]["titulo"], car)
     efe_all = eecc["efe"]["variacion"] + eecc["efe"]["causas"]
     t_efe = d.add_table(rows=len(efe_all) + 1, cols=3)
-    t_efe.style = "Table Grid"
+    _apply_docx_table_chrome(t_efe)
     for c_i, h_txt in enumerate(["Conceptos", closing_date, comp_date]):
-        t_efe.cell(0, c_i).text = h_txt
+        _style_docx_cell(t_efe.cell(0, c_i), h_txt, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, fill_hex="F1F5F9", font_size_pt=7.5)
+
     for r_i, r in enumerate(efe_all, start=1):
-        t_efe.cell(r_i, 0).text = r["label"]
-        t_efe.cell(r_i, 1).text = "" if r.get("isHeader") else fmt_num_cell(r["actual"], True)
-        t_efe.cell(r_i, 2).text = "" if r.get("isHeader") else fmt_num_cell(r["anterior"], True)
+        is_h = r.get("isHeader", False)
+        is_t = r.get("isTotal", False) or "VARIACIÓN" in r["label"].upper() or "AUMENTO" in r["label"].upper()
+        f_hex = "E2E8F0" if (is_h or is_t) else None
+        _style_docx_cell(t_efe.cell(r_i, 0), r["label"], bold=(is_h or is_t), align=WD_ALIGN_PARAGRAPH.LEFT, fill_hex=f_hex, font_size_pt=6.8)
+        _style_docx_cell(t_efe.cell(r_i, 1), "" if is_h else fmt_num_cell(r["actual"], True), bold=is_t, align=WD_ALIGN_PARAGRAPH.RIGHT, fill_hex=f_hex, font_size_pt=6.8)
+        _style_docx_cell(t_efe.cell(r_i, 2), "" if is_h else fmt_num_cell(r["anterior"], True), bold=is_t, align=WD_ALIGN_PARAGRAPH.RIGHT, fill_hex=f_hex, font_size_pt=6.8)
     _add_docx_doble_firma(d, car)
 
-    # Switch to Portrait for Textual Notes RT 54 (BEFORE Notes Tables!) - 30mm margins
-    sec_notas_port = d.add_section()
-    sec_notas_port.orientation = WD_ORIENT.PORTRAIT
-    sec_notas_port.page_width = Mm(210)
-    sec_notas_port.page_height = Mm(297)
-    sec_notas_port.top_margin = Mm(20)
-    sec_notas_port.bottom_margin = Mm(20)
-    sec_notas_port.left_margin = Mm(30)
-    sec_notas_port.right_margin = Mm(30)
+    # Switch to Portrait for Textual Notes RT 54
+    add_portrait_section(d)
 
-    # 8. NOTAS TEXTUALES RT 54
+    # 7. NOTAS TEXTUALES RT 54 (Portrait)
     _add_docx_header_and_signatures(d, "NOTAS A LOS ESTADOS CONTABLES — BASES Y POLÍTICAS (RT 54)", car)
     for sec in notas_obligatorias:
         h2 = d.add_heading(sec["titulo"], level=2)
         h2.alignment = WD_ALIGN_PARAGRAPH.LEFT
         for p_txt in sec["parrafos"]:
-            p_n = d.add_paragraph(p_txt)
+            p_n = d.add_paragraph()
             p_n.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            p_n.paragraph_format.space_before = Pt(0)
+            p_n.paragraph_format.space_after = Pt(3)
+            p_n.paragraph_format.line_spacing = 1.15
+            r = p_n.add_run(p_txt)
+            r.font.name = "Arial"
+            r.font.size = Pt(8.5)
     _add_docx_doble_firma(d, car)
 
-    # Switch to Landscape for Notes Tables and Annexes - 15mm margins
-    sec_tables_land = d.add_section()
-    sec_tables_land.orientation = WD_ORIENT.LANDSCAPE
-    sec_tables_land.page_width = Mm(297)
-    sec_tables_land.page_height = Mm(210)
-    sec_tables_land.top_margin = Mm(15)
-    sec_tables_land.bottom_margin = Mm(15)
-    sec_tables_land.left_margin = Mm(15)
-    sec_tables_land.right_margin = Mm(15)
+    # Switch to Landscape for Notes Tables and Annexes
+    add_landscape_section(d)
 
-    # 9. CUADROS DE NOTAS DE COMPOSICIÓN DE ACTIVO Y PASIVO (13 Cuadros)
+    # 8. CUADROS DE NOTAS DE COMPOSICIÓN DE ACTIVO Y PASIVO (13 Cuadros)
     if eecc["cuadrosNotas"]:
-        d.add_page_break()
         _add_docx_header_and_signatures(d, "CUADROS DE NOTAS DE COMPOSICIÓN DE ACTIVO Y PASIVO", car)
         for cn in eecc["cuadrosNotas"]:
             p_cn = d.add_paragraph()
+            p_cn.paragraph_format.space_before = Pt(6)
+            p_cn.paragraph_format.space_after = Pt(2)
             r_cn = p_cn.add_run(cn["titulo"])
             r_cn.bold = True
+            r_cn.font.name = "Arial"
+            r_cn.font.size = Pt(8.5)
+
             if cn["tipo"] == "PASIVO_5COL":
                 rows_cn = cn["filas"] + ([cn["totales"]] if cn["totales"] else [])
                 t_c = d.add_table(rows=len(rows_cn) + 1, cols=5)
-                t_c.style = "Table Grid"
+                _apply_docx_table_chrome(t_c)
                 for c_i, h_txt in enumerate(["Detalle", f"Corriente {closing_date}", f"No Corr. {closing_date}", f"Corriente {comp_date}", f"No Corr. {comp_date}"]):
-                    t_c.cell(0, c_i).text = h_txt
+                    _style_docx_cell(t_c.cell(0, c_i), h_txt, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, fill_hex="F1F5F9", font_size_pt=7.0)
                 for r_i, f in enumerate(rows_cn, start=1):
+                    is_t = bool(r_i == len(rows_cn) and cn.get("totales"))
+                    f_hex = "E2E8F0" if is_t else None
                     for c_i, v in enumerate([f["detalle"], fmt_num_cell(f["corrActual"]), fmt_num_cell(f["noCorrActual"]), fmt_num_cell(f["corrAnterior"]), fmt_num_cell(f["noCorrAnterior"])]):
-                        t_c.cell(r_i, c_i).text = v
+                        _style_docx_cell(t_c.cell(r_i, c_i), v, bold=is_t, align=WD_ALIGN_PARAGRAPH.LEFT if c_i == 0 else WD_ALIGN_PARAGRAPH.RIGHT, fill_hex=f_hex, font_size_pt=6.8)
             else:
                 rows_cn = cn["filas"] + ([cn["totales"]] if cn["totales"] else [])
                 t_c = d.add_table(rows=len(rows_cn) + 1, cols=3)
-                t_c.style = "Table Grid"
+                _apply_docx_table_chrome(t_c)
                 for c_i, h_txt in enumerate(["Detalle", closing_date, comp_date]):
-                    t_c.cell(0, c_i).text = h_txt
+                    _style_docx_cell(t_c.cell(0, c_i), h_txt, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, fill_hex="F1F5F9", font_size_pt=7.0)
                 for r_i, f in enumerate(rows_cn, start=1):
+                    is_t = bool(r_i == len(rows_cn) and cn.get("totales"))
+                    f_hex = "E2E8F0" if is_t else None
                     for c_i, v in enumerate([f["detalle"], fmt_num_cell(f["actual"]), fmt_num_cell(f["anterior"])]):
-                        t_c.cell(r_i, c_i).text = v
+                        _style_docx_cell(t_c.cell(r_i, c_i), v, bold=is_t, align=WD_ALIGN_PARAGRAPH.LEFT if c_i == 0 else WD_ALIGN_PARAGRAPH.RIGHT, fill_hex=f_hex, font_size_pt=6.8)
         _add_docx_doble_firma(d, car)
 
-    # 10. ANEXOS CONTABLES A a E
+    # 9. ANEXOS CONTABLES A a E (Cada Anexo en su hoja propia)
     for anx in eecc["anexos"]:
         d.add_page_break()
         _add_docx_header_and_signatures(d, anx["titulo"], car)
         ncols = len(anx["headers"])
         t_a = d.add_table(rows=len(anx["rows"]) + 1, cols=ncols)
-        t_a.style = "Table Grid"
+        _apply_docx_table_chrome(t_a)
+
+        f_sz = 6.2 if len(anx["rows"]) > 25 else 7.0
         for c_i, h_txt in enumerate(anx["headers"]):
-            t_a.cell(0, c_i).text = h_txt
+            _style_docx_cell(t_a.cell(0, c_i), h_txt, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, fill_hex="F1F5F9", font_size_pt=f_sz)
+
         for r_i, row in enumerate(anx["rows"], start=1):
+            is_tot = any(w in str(row[0]).upper() for w in ["TOTAL", "I. DEDUCIDAS", "II. INCLUIDAS", "GASTOS POR PRODUCTOS"])
+            f_hex = "E2E8F0" if is_tot else None
             for c_i, val in enumerate(row):
-                t_a.cell(r_i, c_i).text = str(val)
+                _style_docx_cell(t_a.cell(r_i, c_i), str(val), bold=is_tot, align=WD_ALIGN_PARAGRAPH.LEFT if c_i == 0 else WD_ALIGN_PARAGRAPH.RIGHT, fill_hex=f_hex, font_size_pt=f_sz)
         _add_docx_doble_firma(d, car)
 
-    # Switch to Portrait for Comisión Revisora and Auditor Report - 30mm margins
-    sec_aud_port = d.add_section()
-    sec_aud_port.orientation = WD_ORIENT.PORTRAIT
-    sec_aud_port.page_width = Mm(210)
-    sec_aud_port.page_height = Mm(297)
-    sec_aud_port.top_margin = Mm(20)
-    sec_aud_port.bottom_margin = Mm(20)
-    sec_aud_port.left_margin = Mm(30)
-    sec_aud_port.right_margin = Mm(30)
+    # Switch to Portrait for Comisión Revisora, Auditor Report y Resumen de Mejoras
+    add_portrait_section(d)
 
-    # 11. INFORME DE LA COMISIÓN REVISORA DE CUENTAS
+    # 10. INFORME DE LA COMISIÓN REVISORA DE CUENTAS (Portrait)
     _add_docx_header_and_signatures(d, "INFORME DE LA COMISIÓN REVISORA DE CUENTAS / COMISIÓN FISCALIZADORA", car)
     revisores_txt = eecc.get("informeRevisoresTexto", "")
     if revisores_txt:
         for par in revisores_txt.split("\n\n"):
             p_c = par.strip()
             if p_c:
-                p_r = d.add_paragraph(p_c)
+                p_r = d.add_paragraph()
                 p_r.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                p_r.paragraph_format.space_before = Pt(0)
+                p_r.paragraph_format.space_after = Pt(4)
+                p_r.paragraph_format.line_spacing = 1.15
+                r = p_r.add_run(p_c)
+                r.font.name = "Arial"
+                r.font.size = Pt(8.5)
     elif eecc.get("informeComision"):
         for ln in eecc["informeComision"]:
-            p_r = d.add_paragraph(ln)
+            p_r = d.add_paragraph()
             p_r.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+            p_r.paragraph_format.space_before = Pt(0)
+            p_r.paragraph_format.space_after = Pt(4)
+            p_r.paragraph_format.line_spacing = 1.15
+            r = p_r.add_run(ln)
+            r.font.name = "Arial"
+            r.font.size = Pt(8.5)
     _add_docx_revisores_firmas(d)
 
-    # 12. INFORME DE AUDITORÍA EMITIDO POR EL AUDITOR INDEPENDIENTE (RT 37)
+    # 11. INFORME DE AUDITORÍA EMITIDO POR EL AUDITOR INDEPENDIENTE (RT 37 - Portrait)
     d.add_page_break()
     _add_docx_header_and_signatures(d, "INFORME DE AUDITORÍA EMITIDO POR EL AUDITOR INDEPENDIENTE", car)
     for sec_label, p_text in informe_auditor_parrafos:
         if sec_label == "TÍTULO OFICIAL":
             p_t = d.add_paragraph()
             p_t.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_t.paragraph_format.space_before = Pt(4)
+            p_t.paragraph_format.space_after = Pt(4)
             r_t = p_t.add_run(p_text)
             r_t.bold = True
+            r_t.font.name = "Arial"
+            r_t.font.size = Pt(10.0)
         elif sec_label in ("APARTADO I", "APARTADO II"):
             p_ap = d.add_paragraph()
             p_ap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_ap.paragraph_format.space_before = Pt(6)
+            p_ap.paragraph_format.space_after = Pt(3)
             r_ap = p_ap.add_run(p_text.upper())
             r_ap.bold = True
             r_ap.underline = True
+            r_ap.font.name = "Arial"
+            r_ap.font.size = Pt(9.0)
         elif sec_label == "DESTINATARIO":
-            p_dst = d.add_paragraph(p_text)
+            p_dst = d.add_paragraph()
             p_dst.alignment = WD_ALIGN_PARAGRAPH.LEFT
-            for run in p_dst.runs:
-                run.bold = True
+            p_dst.paragraph_format.space_before = Pt(4)
+            p_dst.paragraph_format.space_after = Pt(4)
+            r_dst = p_dst.add_run(p_text)
+            r_dst.bold = True
+            r_dst.font.name = "Arial"
+            r_dst.font.size = Pt(8.5)
         elif sec_label == "LUGAR Y FECHA DE EMISIÓN":
-            pass  # Integrated in signature block
+            pass  # Handled in signature block
         else:
             p_h = d.add_paragraph()
+            p_h.paragraph_format.space_before = Pt(4)
+            p_h.paragraph_format.space_after = Pt(1)
             r_h = p_h.add_run(sec_label)
             r_h.bold = True
+            r_h.font.name = "Arial"
+            r_h.font.size = Pt(8.5)
             for sub_p in p_text.split("\n"):
-                p_sub = d.add_paragraph(sub_p)
-                p_sub.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                if sub_p.strip():
+                    p_sub = d.add_paragraph()
+                    p_sub.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+                    p_sub.paragraph_format.space_before = Pt(0)
+                    p_sub.paragraph_format.space_after = Pt(3)
+                    p_sub.paragraph_format.line_spacing = 1.15
+                    r_sub = p_sub.add_run(sub_p.strip())
+                    r_sub.font.name = "Arial"
+                    r_sub.font.size = Pt(8.5)
     _add_docx_auditor_firma(d, car)
 
-    # 13. RESUMEN DE ADECUACIONES NORMATIVAS Y MEDIDAS CORRECTIVAS APLICADAS (Portrait - AL FINAL)
+    # 12. RESUMEN DE ADECUACIONES NORMATIVAS Y MEDIDAS CORRECTIVAS APLICADAS (Portrait - AL FINAL)
     d.add_page_break()
     _add_docx_header_and_signatures(d, "RESUMEN DE ADECUACIONES NORMATIVAS Y MEDIDAS CORRECTIVAS APLICADAS", car)
     p_desc = d.add_paragraph(
@@ -2343,38 +2509,20 @@ def _build_micproject_docx(
         "y las medidas técnicas correctivas aplicadas en la presente versión homologada:"
     )
     p_desc.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+    p_desc.paragraph_format.space_before = Pt(2)
+    p_desc.paragraph_format.space_after = Pt(4)
 
     t_cambios = d.add_table(rows=len(applied_changes) + 1, cols=4)
-    t_cambios.style = "Table Grid"
+    _apply_docx_table_chrome(t_cambios)
     hdr_c = ["Código / Control", "Observación Detectada en PDF Original", "Medida Correctiva Aplicada (Versión Homologada)", "Estado"]
     for c_i, h_txt in enumerate(hdr_c):
-        p_c = t_cambios.cell(0, c_i).paragraphs[0]
-        p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = p_c.add_run(h_txt)
-        r.bold = True
-        r.font.size = Pt(8.5)
+        _style_docx_cell(t_cambios.cell(0, c_i), h_txt, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, fill_hex="F1F5F9", font_size_pt=8.0)
 
     for r_i, ch in enumerate(applied_changes, start=1):
-        c0 = t_cambios.cell(r_i, 0).paragraphs[0]
-        r0 = c0.add_run(f"[{ch.get('category', 'NORMATIVA')}]\n" + str(ch.get('code', '')) + "\n" + str(ch.get('title', '')))
-        r0.bold = True
-        r0.font.size = Pt(7.5)
-
-        c1 = t_cambios.cell(r_i, 1).paragraphs[0]
-        c1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        r1 = c1.add_run(ch.get('observation', ''))
-        r1.font.size = Pt(7.5)
-
-        c2 = t_cambios.cell(r_i, 2).paragraphs[0]
-        c2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        r2 = c2.add_run(ch.get('action', ''))
-        r2.font.size = Pt(7.5)
-
-        c3 = t_cambios.cell(r_i, 3).paragraphs[0]
-        c3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r3 = c3.add_run(ch.get('status_remediado', 'SUBSANADO'))
-        r3.bold = True
-        r3.font.size = Pt(7.5)
+        _style_docx_cell(t_cambios.cell(r_i, 0), f"[{ch.get('category', 'NORMATIVA')}]\n" + str(ch.get('code', '')) + "\n" + str(ch.get('title', '')), bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, font_size_pt=7.0)
+        _style_docx_cell(t_cambios.cell(r_i, 1), ch.get('observation', ''), bold=False, align=WD_ALIGN_PARAGRAPH.JUSTIFY, font_size_pt=7.0)
+        _style_docx_cell(t_cambios.cell(r_i, 2), ch.get('action', ''), bold=False, align=WD_ALIGN_PARAGRAPH.JUSTIFY, font_size_pt=7.0)
+        _style_docx_cell(t_cambios.cell(r_i, 3), ch.get('status_remediado', 'SUBSANADO'), bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, fill_hex="F0FDF4", font_size_pt=7.2)
     _add_docx_doble_firma(d, car)
 
     d.save(output_docx_path)

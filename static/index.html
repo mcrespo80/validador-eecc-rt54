@@ -1623,57 +1623,136 @@
         alert('No hay balance cargado');
         return;
       }
+      
+      // Si el servidor ya generó el archivo .docx nativo con el motor de MICPROJECT, ofrecer descarga directa
+      if (window.lastValidationData.improved_docx_url) {
+        const a_dl = document.createElement('a');
+        a_dl.href = window.lastValidationData.improved_docx_url;
+        a_dl.download = window.lastValidationData.improved_docx_url.split('/').pop().split('?')[0];
+        document.body.appendChild(a_dl);
+        a_dl.click();
+        document.body.removeChild(a_dl);
+        return;
+      }
+
       const car = window.lastValidationData.remediation_info.eecc_structured.caratulaData;
       const htmlContent = `
-        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <html xmlns:o='urn:schemas-microsoft-com:office:office'
+              xmlns:w='urn:schemas-microsoft-com:office:word'
+              xmlns='http://www.w3.org/TR/REC-html40'>
         <head>
           <meta charset='utf-8'>
-          <title>${car.razonSocial} - EECC</title>
+          <title>Estados Contables - ${car.razonSocial}</title>
+          <!--[if gte mso 9]>
+          <xml>
+            <w:WordDocument>
+              <w:View>Print</w:View>
+              <w:Zoom>100</w:Zoom>
+              <w:DoNotOptimizeForBrowser/>
+            </w:WordDocument>
+          </xml>
+          <![endif]-->
           <style>
-            @page SectionPortrait { size: 210mm 297mm; margin: 20mm 30mm 20mm 30mm; mso-header-margin: 10mm; mso-footer-margin: 10mm; }
-            @page SectionLandscape { size: 297mm 210mm; margin: 15mm 15mm 15mm 15mm; mso-page-orientation: landscape; }
+            @page SectionPortrait {
+              size: 21.0cm 29.7cm;
+              margin: 1.5cm 2.5cm 1.5cm 2.5cm;
+              mso-page-orientation: portrait;
+            }
+            @page SectionLandscape {
+              size: 29.7cm 21.0cm;
+              margin: 0.9cm 0.9cm 0.9cm 0.9cm;
+              mso-page-orientation: landscape;
+            }
             div.SectionPortrait { page: SectionPortrait; }
             div.SectionLandscape { page: SectionLandscape; }
-            body { font-family: 'Arial', sans-serif; font-size: 8.5pt; color: #000; }
-            table { border-collapse: collapse; width: 100%; margin-bottom: 12pt; font-size: 8pt; }
-            th, td { border: 0.5pt solid #000; padding: 3pt 4pt; }
-            th { background-color: #E5E7EB; font-weight: bold; }
-            .cabecera { border-bottom: 1.5pt solid #000; padding-bottom: 4pt; margin-bottom: 8pt; }
-            .firma { margin-top: 18pt; border-top: 0.5pt solid #888; padding-top: 8pt; font-size: 7.5pt; text-align: center; }
+            body {
+              font-family: Arial, sans-serif;
+              font-size: 8.5pt;
+              color: #0f172a;
+              line-height: 1.15;
+            }
+            h1 { font-size: 15pt; font-weight: bold; text-align: center; margin-bottom: 6px; }
+            h2 { font-size: 11pt; font-weight: bold; text-align: center; margin-bottom: 8px; text-transform: uppercase; border-bottom: 1.5px solid #000; padding-bottom: 2px; }
+            h3 { font-size: 9.0pt; font-weight: bold; margin-top: 6px; margin-bottom: 4px; text-transform: uppercase; }
+            table { width: 100%; border-collapse: collapse; margin: 0 auto 6px auto; font-size: 7.8pt; }
+            th { background-color: #f1f5f9; font-weight: bold; border: 1px solid #cbd5e1; padding: 2.5px 4px; text-align: center; }
+            td { border: 1px solid #cbd5e1; padding: 2px 4px; }
+            .num { text-align: right; font-family: 'Courier New', Courier, monospace; }
+            .font-bold { font-weight: bold; }
+            .bg-tot { background-color: #e2e8f0; font-weight: bold; }
+            .cabecera { border-bottom: 1px solid #000; padding-bottom: 3px; margin-bottom: 8px; }
+            .firma { margin-top: 25px; border-collapse: collapse; border: none; width: 100%; }
           </style>
         </head>
         <body>
+          <!-- 1. CARÁTULA -->
           <div class='SectionPortrait'>
             ${document.getElementById('mp-caratula-preview').innerHTML}
-            <br clear='all' style='page-break-before:always' />
+          </div>
+
+          <!-- 2. MEMORIA -->
+          <br clear="all" style="page-break-before:always; mso-break-type:section-break; page:SectionPortrait;" />
+          <div class='SectionPortrait'>
             ${document.getElementById('mp-memoria-preview').innerHTML}
           </div>
+
+          <!-- 3. ESP -->
+          <br clear="all" style="page-break-before:always; mso-break-type:section-break; page:SectionLandscape;" />
           <div class='SectionLandscape'>
-            <br clear='all' style='page-break-before:always' />
             ${document.getElementById('panel-mp-esp').innerHTML}
-            <br clear='all' style='page-break-before:always' />
+          </div>
+
+          <!-- 4. EERR -->
+          <br clear="all" style="page-break-before:always; mso-break-type:section-break; page:SectionLandscape;" />
+          <div class='SectionLandscape'>
             ${document.getElementById('panel-mp-eerr').innerHTML}
-            <br clear='all' style='page-break-before:always' />
+          </div>
+
+          <!-- 5. EEPN -->
+          <br clear="all" style="page-break-before:always; mso-break-type:section-break; page:SectionLandscape;" />
+          <div class='SectionLandscape'>
             ${document.getElementById('panel-mp-eepn').innerHTML}
-            <br clear='all' style='page-break-before:always' />
+          </div>
+
+          <!-- 6. EFE -->
+          <br clear="all" style="page-break-before:always; mso-break-type:section-break; page:SectionLandscape;" />
+          <div class='SectionLandscape'>
             ${document.getElementById('panel-mp-efe').innerHTML}
           </div>
+
+          <!-- 7. NOTAS TEXTUALES RT 54 -->
+          <br clear="all" style="page-break-before:always; mso-break-type:section-break; page:SectionPortrait;" />
           <div class='SectionPortrait'>
-            <br clear='all' style='page-break-before:always' />
             ${document.getElementById('panel-mp-notas').innerHTML}
           </div>
+
+          <!-- 8. CUADROS DE NOTAS ACTIVO Y PASIVO -->
+          <br clear="all" style="page-break-before:always; mso-break-type:section-break; page:SectionLandscape;" />
           <div class='SectionLandscape'>
-            <br clear='all' style='page-break-before:always' />
             ${document.getElementById('mp-cuadros-container').innerHTML}
-            <br clear='all' style='page-break-before:always' />
+          </div>
+
+          <!-- 9. ANEXOS A a E -->
+          <br clear="all" style="page-break-before:always; mso-break-type:section-break; page:SectionLandscape;" />
+          <div class='SectionLandscape'>
             ${document.getElementById('mp-anexos-container').innerHTML}
           </div>
+
+          <!-- 10. COMISIÓN REVISORA -->
+          <br clear="all" style="page-break-before:always; mso-break-type:section-break; page:SectionPortrait;" />
           <div class='SectionPortrait'>
-            <br clear='all' style='page-break-before:always' />
             ${document.getElementById('mp-revisores-preview').innerHTML}
-            <br clear='all' style='page-break-before:always' />
+          </div>
+
+          <!-- 11. AUDITOR INDEPENDIENTE -->
+          <br clear="all" style="page-break-before:always; mso-break-type:section-break; page:SectionPortrait;" />
+          <div class='SectionPortrait'>
             ${document.getElementById('panel-mp-auditor').innerHTML}
-            <br clear='all' style='page-break-before:always' />
+          </div>
+
+          <!-- 12. RESUMEN DE MEJORAS Y ADECUACIONES (AL FINAL) -->
+          <br clear="all" style="page-break-before:always; mso-break-type:section-break; page:SectionPortrait;" />
+          <div class='SectionPortrait'>
             ${document.getElementById('modal-applied-changes').innerHTML}
           </div>
         </body>
@@ -1688,7 +1767,6 @@
       URL.revokeObjectURL(url);
     }
 
-    // Export to Excel .xls (HTML-based Multi-Table Excel Workbook in strict order)
     function exportMpExcel() {
       if (!window.lastValidationData || !window.lastValidationData.remediation_info) {
         alert('No hay balance cargado');
