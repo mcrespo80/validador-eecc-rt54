@@ -102,19 +102,27 @@ class MicProjectCanvas(canvas.Canvas):
         w, h = self._pagesize
         margin = 14 * mm
 
-        # 1. CABECERA EECC (MICPROJECT Style: Razón Social bold uppercase + solid black line)
+        # 1. CABECERA EECC (MICPROJECT Style: Nombre Completo con ajuste dinámico de fuente)
         top_y = h - 13 * mm
-        self.setFont(FONT_BOLD, 8.5)
-        self.setFillColor(colors.black)
         header_left = self.entity_name.upper()
         if self.rnos:
             header_left = f"AGENTE DEL SEGURO DE SALUD: {header_left}"
-        self.drawString(margin, top_y, header_left[:92])
 
         self.setFont(FONT_REG, 7.5)
         right_meta = f"RNOS: {self.rnos}  |  " if self.rnos else ""
         right_meta += f"CUIT: {self.cuit}  |  Hoja {self._pageNumber} de {page_count}"
+        right_w = self.stringWidth(right_meta, FONT_REG, 7.5)
         self.drawRightString(w - margin, top_y, right_meta)
+
+        # Dynamic font sizing to ensure 100% full entity name visibility without truncation
+        avail_w = (w - 2 * margin) - right_w - 6 * mm
+        hdr_font_sz = 8.5
+        while hdr_font_sz > 4.5 and self.stringWidth(header_left, FONT_BOLD, hdr_font_sz) > avail_w:
+            hdr_font_sz -= 0.25
+
+        self.setFont(FONT_BOLD, hdr_font_sz)
+        self.setFillColor(colors.black)
+        self.drawString(margin, top_y, header_left)
 
         self.setStrokeColor(colors.black)
         self.setLineWidth(1.0)
@@ -1467,37 +1475,7 @@ def _build_micproject_pdf(
     ]))
     story.append(t_exec)
 
-    # ==================================================================
-    # PAGE 2 (PORTRAIT): RESUMEN DE MEJORAS Y MEDIDAS CORRECTIVAS APLICADAS
-    # (DIAGNÓSTICO DEL BALANCE ORIGINAL VS. SOLUCIONES EN VERSIÓN HOMOLOGADA)
-    # ==================================================================
-    story.append(PageBreak())
-    add_statement_header(story, "RESUMEN DE ADECUACIONES NORMATIVAS Y MEDIDAS CORRECTIVAS APLICADAS", "Comparativa de Observaciones Detectadas en el PDF Original vs. Soluciones en la Versión Homologada")
-    full_chg_rows = [[
-        Paragraph("Código / Control", st_th_left),
-        Paragraph("Observación Detectada en PDF Original", st_th_left),
-        Paragraph("Medida Correctiva Aplicada (Versión Homologada)", st_th_left),
-        Paragraph("Resultado", st_th),
-    ]]
-    for chg in applied_changes:
-        st_color = "#DC2626" if chg.get("status_orig") == "ERROR" else "#D97706"
-        st_badge = f"<font color='{st_color}'><b>[{chg.get('status_orig', 'ADVERTENCIA')}]</b></font><br/><b>{chg.get('code', '')}</b><br/><font size=6>{chg.get('title', '')[:30]}</font>"
-        full_chg_rows.append([
-            Paragraph(st_badge, st_td),
-            Paragraph(chg.get("observation", chg.get("category", "")), st_td),
-            Paragraph(chg.get("action", ""), st_td),
-            Paragraph("<font color='#059669'><b>SUBSANADO ✓</b></font>", st_th),
-        ])
-    t_full_chg = Table(full_chg_rows, colWidths=[36 * mm, 64 * mm, 68 * mm, 14 * mm], repeatRows=1)
-    t_full_chg.setStyle(TableStyle([
-        ("BOX", (0, 0), (-1, -1), 0.8, colors.black),
-        ("INNERGRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#9CA3AF")),
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E5E7EB")),
-        ("TOPPADDING", (0, 0), (-1, -1), 1.6 * mm),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 1.6 * mm),
-        ("VALIGN", (0, 0), (-1, -1), "TOP"),
-    ]))
-    story.append(t_full_chg)
+
 
     # ==================================================================
     # PAGE 3 (PORTRAIT): MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN
@@ -1700,42 +1678,54 @@ def _build_micproject_pdf(
     story.append(t_eepn)
 
     # ==================================================================
-    # PAGE 5 (LANDSCAPE): BLOQUE EFE (VARIACIÓN + CAUSAS + CONCILIACIÓN RT 54)
+    # PAGE 6 (LANDSCAPE): BLOQUE ESTADO DE FLUJOS DE EFECTIVO (1 SOLA HOJA)
     # ==================================================================
     story.append(PageBreak())
     add_statement_header(story, eecc["efe"]["titulo"])
 
+    efe_total_rows = len(eecc["efe"]["variacion"]) + len(eecc["efe"]["causas"]) + 2
+    efe_pad = 0.50 * mm if efe_total_rows > 18 else 1.2 * mm
+    efe_font_sz = 6.2 if efe_total_rows > 18 else 7.0
+    efe_lead = 7.4 if efe_total_rows > 18 else 8.8
+
+    st_efe_th = ParagraphStyle("EFE_TH", fontName=FONT_BOLD, fontSize=efe_font_sz + 0.2, leading=efe_lead, textColor=colors.black, alignment=TA_CENTER)
+    st_efe_th_l = ParagraphStyle("EFE_THL", fontName=FONT_BOLD, fontSize=efe_font_sz + 0.2, leading=efe_lead, textColor=colors.black, alignment=TA_LEFT)
+    st_efe_td = ParagraphStyle("EFE_TD", fontName=FONT_REG, fontSize=efe_font_sz, leading=efe_lead, textColor=colors.black, alignment=TA_LEFT)
+    st_efe_td_b = ParagraphStyle("EFE_TDB", fontName=FONT_BOLD, fontSize=efe_font_sz + 0.1, leading=efe_lead, textColor=colors.black, alignment=TA_LEFT)
+    st_efe_num = ParagraphStyle("EFE_NUM", fontName=FONT_REG, fontSize=efe_font_sz, leading=efe_lead, textColor=colors.black, alignment=TA_RIGHT)
+    st_efe_num_b = ParagraphStyle("EFE_NUMB", fontName=FONT_BOLD, fontSize=efe_font_sz + 0.1, leading=efe_lead, textColor=colors.black, alignment=TA_RIGHT)
+
     efe_data = [[
-        Paragraph("I. VARIACIÓN DEL EFECTIVO Y SUS EQUIVALENTES", st_th_left),
-        Paragraph(f"ACTUAL {closing_date} ($)", st_th),
-        Paragraph(f"COMPARATIVO {comp_date} ($)", st_th)
+        Paragraph("I. VARIACIÓN DEL EFECTIVO Y SUS EQUIVALENTES", st_efe_th_l),
+        Paragraph(f"ACTUAL {closing_date} ($)", st_efe_th),
+        Paragraph(f"COMPARATIVO {comp_date} ($)", st_efe_th)
     ]]
     efe_styles = [
         ("BOX", (0, 0), (-1, -1), 1.0, colors.black),
-        ("INNERGRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#9CA3AF")),
+        ("INNERGRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#9CA3AF")),
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E5E7EB")),
-        ("TOPPADDING", (0, 0), (-1, -1), 1.5 * mm),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 1.5 * mm),
+        ("TOPPADDING", (0, 0), (-1, -1), efe_pad),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), efe_pad),
     ]
     for r in eecc["efe"]["variacion"]:
         is_b = r["isTotal"]
         efe_data.append([
-            Paragraph(r["label"], st_td_bold if is_b else st_td),
-            Paragraph(fmt_num_cell(r["actual"]), st_num_bold if is_b else st_num),
-            Paragraph(fmt_num_cell(r["anterior"]), st_num_bold if is_b else st_num),
+            Paragraph(r["label"], st_efe_td_b if is_b else st_efe_td),
+            Paragraph(fmt_num_cell(r["actual"]), st_efe_num_b if is_b else st_efe_num),
+            Paragraph(fmt_num_cell(r["anterior"]), st_efe_num_b if is_b else st_efe_num),
         ])
     efe_data.append([
-        Paragraph("II. CAUSAS DE LAS VARIACIONES DEL EFECTIVO", st_th_left),
-        Paragraph("", st_th), Paragraph("", st_th)
+        Paragraph("II. CAUSAS DE LAS VARIACIONES DEL EFECTIVO", st_efe_th_l),
+        Paragraph("", st_efe_th), Paragraph("", st_efe_th)
     ])
     efe_styles.append(("BACKGROUND", (0, len(efe_data) - 1), (-1, len(efe_data) - 1), colors.HexColor("#E5E7EB")))
 
     for r in eecc["efe"]["causas"]:
         is_b = r["isHeader"] or r["isTotal"]
         efe_data.append([
-            Paragraph(r["label"], st_td_bold if is_b else st_td),
-            Paragraph("" if r["isHeader"] else fmt_num_cell(r["actual"], True), st_num_bold if is_b else st_num),
-            Paragraph("" if r["isHeader"] else fmt_num_cell(r["anterior"], True), st_num_bold if is_b else st_num),
+            Paragraph(r["label"], st_efe_td_b if is_b else st_efe_td),
+            Paragraph("" if r["isHeader"] else fmt_num_cell(r["actual"], True), st_efe_num_b if is_b else st_efe_num),
+            Paragraph("" if r["isHeader"] else fmt_num_cell(r["anterior"], True), st_efe_num_b if is_b else st_efe_num),
         ])
         if r["isHeader"]:
             efe_styles.append(("BACKGROUND", (0, len(efe_data) - 1), (-1, len(efe_data) - 1), colors.HexColor("#F3F4F6")))
@@ -1743,12 +1733,11 @@ def _build_micproject_pdf(
     t_efe = Table(efe_data, colWidths=[w_land * 0.64, w_land * 0.18, w_land * 0.18])
     t_efe.setStyle(TableStyle(efe_styles))
     story.append(t_efe)
-    story.append(Spacer(1, 2 * mm))
+    story.append(Spacer(1, 1.5 * mm))
     story.append(Paragraph(
         f"<i>Nota de Conciliación del Efectivo (RT 54 párr. 672 inc. a): El saldo de Efectivo y sus equivalentes al cierre del ejercicio concilia directamente con el rubro Caja y Bancos (Nota 2.1) del Estado de Situación Patrimonial.</i>",
-        st_body
+        ParagraphStyle("EFE_Nota", fontName=FONT_ITA, fontSize=5.8, leading=7.2, textColor=colors.black, alignment=TA_LEFT)
     ))
-
     # ==================================================================
     # PAGES (PORTRAIT): BLOQUE NOTAS TEXTUALES RT 54 (MICPROJECT BloqueNotas)
     # (LAS NOTAS TEXTUALES VAN ANTES DE LOS CUADROS DE NOTAS DE ACTIVO Y PASIVO)
@@ -1846,19 +1835,45 @@ def _build_micproject_pdf(
         rem_w = (w_land - first_w) / max(1, ncols - 1)
         cw = [first_w] + [rem_w] * (ncols - 1)
 
-        anx_data = [[Paragraph(h, st_th if i > 0 else st_th_left) for i, h in enumerate(anx["headers"])]]
+        n_rows = len(anx["rows"]) + 1
+        if n_rows > 30:
+            anx_pad = 0.45 * mm
+            anx_fsize = 5.8
+            anx_lead = 6.8
+        elif n_rows > 20:
+            anx_pad = 0.65 * mm
+            anx_fsize = 6.3
+            anx_lead = 7.5
+        elif n_rows > 14:
+            anx_pad = 0.85 * mm
+            anx_fsize = 6.8
+            anx_lead = 8.2
+        else:
+            anx_pad = 1.3 * mm
+            anx_fsize = 7.1
+            anx_lead = 8.8
+
+        anx_id = anx["titulo"][:4].replace(" ", "_")
+        st_anx_th = ParagraphStyle(f"AnxTH_{anx_id}", fontName=FONT_BOLD, fontSize=anx_fsize + 0.2, leading=anx_lead, textColor=colors.black, alignment=TA_CENTER)
+        st_anx_th_l = ParagraphStyle(f"AnxTHL_{anx_id}", fontName=FONT_BOLD, fontSize=anx_fsize + 0.2, leading=anx_lead, textColor=colors.black, alignment=TA_LEFT)
+        st_anx_td = ParagraphStyle(f"AnxTD_{anx_id}", fontName=FONT_REG, fontSize=anx_fsize, leading=anx_lead, textColor=colors.black, alignment=TA_LEFT)
+        st_anx_td_b = ParagraphStyle(f"AnxTDB_{anx_id}", fontName=FONT_BOLD, fontSize=anx_fsize + 0.1, leading=anx_lead, textColor=colors.black, alignment=TA_LEFT)
+        st_anx_num = ParagraphStyle(f"AnxNum_{anx_id}", fontName=FONT_REG, fontSize=anx_fsize, leading=anx_lead, textColor=colors.black, alignment=TA_RIGHT)
+        st_anx_num_b = ParagraphStyle(f"AnxNumB_{anx_id}", fontName=FONT_BOLD, fontSize=anx_fsize + 0.1, leading=anx_lead, textColor=colors.black, alignment=TA_RIGHT)
+
+        anx_data = [[Paragraph(h, st_anx_th if i > 0 else st_anx_th_l) for i, h in enumerate(anx["headers"])]]
         anx_styles = [
             ("BOX", (0, 0), (-1, -1), 1.0, colors.black),
             ("INNERGRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#9CA3AF")),
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E5E7EB")),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("TOPPADDING", (0, 0), (-1, -1), 1.0 * mm),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 1.0 * mm),
+            ("TOPPADDING", (0, 0), (-1, -1), anx_pad),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), anx_pad),
         ]
         for r_idx, row in enumerate(anx["rows"], start=1):
             is_tot = any(w in row[0].upper() for w in ["TOTAL", "I. DEDUCIDAS", "II. INCLUIDAS", "GASTOS POR PRODUCTOS"])
             anx_data.append([
-                Paragraph(str(cell), (st_td_bold if is_tot else st_td) if c_i == 0 else (st_num_bold if is_tot else st_num))
+                Paragraph(str(cell), (st_anx_td_b if is_tot else st_anx_td) if c_i == 0 else (st_anx_num_b if is_tot else st_anx_num))
                 for c_i, cell in enumerate(row)
             ])
             if is_tot:
@@ -1937,6 +1952,39 @@ def _build_micproject_pdf(
                 story.append(Paragraph(sub_p, st_doc_body))
                 story.append(Spacer(1, 1.8 * mm))
             story.append(Spacer(1, 2.0 * mm))
+
+    # ==================================================================
+    # PAGE (PORTRAIT): RESUMEN DE ADECUACIONES NORMATIVAS Y MEDIDAS CORRECTIVAS APLICADAS
+    # (DIAGNÓSTICO VS. CORRECCIONES APLICADAS - UBICADO AL FINAL DEL JUEGO DE EECC)
+    # ==================================================================
+    story.append(NextPageTemplate("Portrait"))
+    story.append(PageBreak())
+    add_statement_header(story, "RESUMEN DE ADECUACIONES NORMATIVAS Y MEDIDAS CORRECTIVAS APLICADAS", "Comparativa de Observaciones Detectadas en el PDF Original vs. Soluciones en la Versión Homologada")
+    full_chg_rows = [[
+        Paragraph("Código / Control", st_th_left),
+        Paragraph("Observación Detectada en PDF Original", st_th_left),
+        Paragraph("Medida Correctiva Aplicada (Versión Homologada)", st_th_left),
+        Paragraph("Resultado", st_th),
+    ]]
+    for chg in applied_changes:
+        st_color = "#DC2626" if chg.get("status_orig") == "ERROR" else "#D97706"
+        st_badge = f"<font color='{st_color}'><b>[{chg.get('status_orig', 'ADVERTENCIA')}]</b></font><br/><b>{chg.get('code', '')}</b><br/><font size=6>{chg.get('title', '')[:30]}</font>"
+        full_chg_rows.append([
+            Paragraph(st_badge, st_td),
+            Paragraph(chg.get("observation", chg.get("category", "")), st_td),
+            Paragraph(chg.get("action", ""), st_td),
+            Paragraph("<font color='#059669'><b>SUBSANADO ✓</b></font>", st_th),
+        ])
+    t_full_chg = Table(full_chg_rows, colWidths=[36 * mm, 64 * mm, 68 * mm, 14 * mm], repeatRows=1)
+    t_full_chg.setStyle(TableStyle([
+        ("BOX", (0, 0), (-1, -1), 0.8, colors.black),
+        ("INNERGRID", (0, 0), (-1, -1), 0.35, colors.HexColor("#9CA3AF")),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E5E7EB")),
+        ("TOPPADDING", (0, 0), (-1, -1), 1.6 * mm),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 1.6 * mm),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+    ]))
+    story.append(t_full_chg)
 
     doc.build(
         story,
@@ -2068,48 +2116,6 @@ def _build_micproject_docx(
     for idx_i, (k, v) in enumerate(car_items):
         t_car.cell(idx_i, 0).text = k
         t_car.cell(idx_i, 1).text = v
-    _add_docx_doble_firma(d, car)
-
-    # 2. RESUMEN DE ADECUACIONES NORMATIVAS Y MEDIDAS CORRECTIVAS APLICADAS (Portrait)
-    d.add_page_break()
-    _add_docx_header_and_signatures(d, "RESUMEN DE ADECUACIONES NORMATIVAS Y MEDIDAS CORRECTIVAS APLICADAS", car)
-    p_desc = d.add_paragraph(
-        "Detalle comparativo entre las observaciones normativas y de exposición detectadas en el balance original "
-        "y las medidas técnicas correctivas aplicadas en la presente versión homologada:"
-    )
-    p_desc.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-
-    t_cambios = d.add_table(rows=len(applied_changes) + 1, cols=4)
-    t_cambios.style = "Table Grid"
-    hdr_c = ["Código / Control", "Observación Detectada en PDF Original", "Medida Correctiva Aplicada (Versión Homologada)", "Estado"]
-    for c_i, h_txt in enumerate(hdr_c):
-        p_c = t_cambios.cell(0, c_i).paragraphs[0]
-        p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r = p_c.add_run(h_txt)
-        r.bold = True
-        r.font.size = Pt(8.5)
-
-    for r_i, ch in enumerate(applied_changes, start=1):
-        c0 = t_cambios.cell(r_i, 0).paragraphs[0]
-        r0 = c0.add_run(f"[{ch.get('category', 'NORMATIVA')}]\n{ch.get('code', '')}\n{ch.get('title', '')}")
-        r0.bold = True
-        r0.font.size = Pt(7.5)
-
-        c1 = t_cambios.cell(r_i, 1).paragraphs[0]
-        c1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        r1 = c1.add_run(ch.get('observation', ''))
-        r1.font.size = Pt(7.5)
-
-        c2 = t_cambios.cell(r_i, 2).paragraphs[0]
-        c2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
-        r2 = c2.add_run(ch.get('action', ''))
-        r2.font.size = Pt(7.5)
-
-        c3 = t_cambios.cell(r_i, 3).paragraphs[0]
-        c3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        r3 = c3.add_run(ch.get('status_remediado', 'SUBSANADO'))
-        r3.bold = True
-        r3.font.size = Pt(7.5)
     _add_docx_doble_firma(d, car)
 
     # 3. MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN (Portrait - Justified & 30mm Margins)
@@ -2328,5 +2334,47 @@ def _build_micproject_docx(
                 p_sub = d.add_paragraph(sub_p)
                 p_sub.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     _add_docx_auditor_firma(d, car)
+
+    # 13. RESUMEN DE ADECUACIONES NORMATIVAS Y MEDIDAS CORRECTIVAS APLICADAS (Portrait - AL FINAL)
+    d.add_page_break()
+    _add_docx_header_and_signatures(d, "RESUMEN DE ADECUACIONES NORMATIVAS Y MEDIDAS CORRECTIVAS APLICADAS", car)
+    p_desc = d.add_paragraph(
+        "Detalle comparativo entre las observaciones normativas y de exposición detectadas en el balance original "
+        "y las medidas técnicas correctivas aplicadas en la presente versión homologada:"
+    )
+    p_desc.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+
+    t_cambios = d.add_table(rows=len(applied_changes) + 1, cols=4)
+    t_cambios.style = "Table Grid"
+    hdr_c = ["Código / Control", "Observación Detectada en PDF Original", "Medida Correctiva Aplicada (Versión Homologada)", "Estado"]
+    for c_i, h_txt in enumerate(hdr_c):
+        p_c = t_cambios.cell(0, c_i).paragraphs[0]
+        p_c.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p_c.add_run(h_txt)
+        r.bold = True
+        r.font.size = Pt(8.5)
+
+    for r_i, ch in enumerate(applied_changes, start=1):
+        c0 = t_cambios.cell(r_i, 0).paragraphs[0]
+        r0 = c0.add_run(f"[{ch.get('category', 'NORMATIVA')}]\n" + str(ch.get('code', '')) + "\n" + str(ch.get('title', '')))
+        r0.bold = True
+        r0.font.size = Pt(7.5)
+
+        c1 = t_cambios.cell(r_i, 1).paragraphs[0]
+        c1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        r1 = c1.add_run(ch.get('observation', ''))
+        r1.font.size = Pt(7.5)
+
+        c2 = t_cambios.cell(r_i, 2).paragraphs[0]
+        c2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
+        r2 = c2.add_run(ch.get('action', ''))
+        r2.font.size = Pt(7.5)
+
+        c3 = t_cambios.cell(r_i, 3).paragraphs[0]
+        c3.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r3 = c3.add_run(ch.get('status_remediado', 'SUBSANADO'))
+        r3.bold = True
+        r3.font.size = Pt(7.5)
+    _add_docx_doble_firma(d, car)
 
     d.save(output_docx_path)

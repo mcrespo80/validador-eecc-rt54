@@ -1512,11 +1512,11 @@
         </div>
       `;
 
-      // 12. VISTA A4 COMPLETA (PRINT VIEW EN ORDEN ESTRICTO: HOJAS VERTICALES CON MÁRGENES Y HORIZONTALES)
+      // 12. VISTA A4 COMPLETA (ORDEN NORMATIVO ESTRICTO HOMOLOGADO)
+      // 1. Carátula -> 2. Memoria -> 3. ESP -> 4. EERR -> 5. EEPN -> 6. EFE -> 7. Notas RT 54 -> 8. Cuadros -> 9. Anexos -> 10. Revisores -> 11. Auditor -> 12. Resumen Mejoras
       const a4Cont = document.getElementById('mp-a4all-container');
       a4Cont.innerHTML = `
         <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-caratula').querySelector('#mp-caratula-preview').outerHTML}</div>
-        <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('modal-applied-changes').innerHTML}</div>
         <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-memoria').querySelector('#mp-memoria-preview').outerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-esp').innerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-eerr').innerHTML}</div>
@@ -1527,6 +1527,7 @@
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${anexosHtml}</div>
         <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-revisores').querySelector('#mp-revisores-preview').outerHTML}</div>
         <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-auditor').innerHTML}</div>
+        <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('modal-applied-changes').innerHTML}</div>
       `;
     }
 
@@ -1645,8 +1646,6 @@
           <div class='SectionPortrait'>
             ${document.getElementById('mp-caratula-preview').innerHTML}
             <br clear='all' style='page-break-before:always' />
-            ${document.getElementById('modal-applied-changes').innerHTML}
-            <br clear='all' style='page-break-before:always' />
             ${document.getElementById('mp-memoria-preview').innerHTML}
           </div>
           <div class='SectionLandscape'>
@@ -1674,6 +1673,8 @@
             ${document.getElementById('mp-revisores-preview').innerHTML}
             <br clear='all' style='page-break-before:always' />
             ${document.getElementById('panel-mp-auditor').innerHTML}
+            <br clear='all' style='page-break-before:always' />
+            ${document.getElementById('modal-applied-changes').innerHTML}
           </div>
         </body>
         </html>
