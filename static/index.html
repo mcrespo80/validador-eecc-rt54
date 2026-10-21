@@ -162,6 +162,12 @@
               <div class="text-[10px] font-bold uppercase text-slate-500">Puntaje Normativo</div>
               <div id="score-val" class="text-2xl font-black text-[#0D1F3C]">0/100</div>
             </div>
+            <button onclick="openNotesModal()" class="px-4 py-3 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-extrabold shadow flex items-center gap-2 transition cursor-pointer">
+              <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              📑 Anexo Textual de Notas RT 54 (Según Rubros)
+            </button>
             <button onclick="openImprovedModal()" class="px-4 py-3 rounded-lg bg-[#C59B27] hover:bg-[#b08920] text-slate-950 text-xs font-extrabold shadow flex items-center gap-2 transition cursor-pointer">
               <svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -352,6 +358,81 @@
     </div>
   </div>
 
+  <!-- MODAL: ANEXO TEXTUAL DE NOTAS RT 54 PERSONALIZADO SEGÚN RUBROS DEL BALANCE -->
+  <div id="notes-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <!-- Modal Header -->
+      <div class="navy-gradient text-white px-6 py-4 flex items-center justify-between border-b border-[#C59B27]/40">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 text-[10px] font-black uppercase">Anexo Textual Independiente • RT 54 (T.O. RT 59)</span>
+            <h3 class="text-base font-extrabold tracking-wide">Modelo Textual de Notas RT 54 Adaptado a los Rubros de tu Balance</h3>
+          </div>
+          <p class="text-xs text-slate-300 mt-0.5">
+            Respeta los nombres exactos de los rubros con saldo de tu balance y se vincula directamente con tus Cuadros de Detalle de Notas de Activo y Pasivo ya armados.
+          </p>
+        </div>
+        <button onclick="closeNotesModal()" class="text-slate-300 hover:text-white p-1.5 rounded-lg bg-white/10">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 bg-slate-50">
+        <!-- Download Action Bar -->
+        <div class="bg-white p-4 rounded-xl border border-emerald-500/50 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h4 class="text-sm font-bold text-[#0D1F3C]">Descargar Anexo Textual de Notas RT 54 (Listo para intercalar en tu Balance)</h4>
+            <p class="text-xs text-slate-500">También guardado en <code class="bg-slate-100 px-1 rounded">MC\RT54\Ultimo_Anexo_Textual_Notas_RT54 (.docx y .pdf)</code></p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+            <a id="notes-dl-docx" href="#" target="_blank" class="px-4 py-2.5 rounded-lg bg-[#C59B27] hover:bg-[#b08920] text-slate-950 text-xs font-extrabold shadow flex items-center gap-2 transition">
+              📝 Descargar Word Editable (.docx)
+            </a>
+            <a id="notes-dl-pdf" href="#" target="_blank" class="px-4 py-2.5 rounded-lg bg-[#0D1F3C] hover:bg-[#1A365D] text-white text-xs font-bold shadow flex items-center gap-2 transition">
+              📄 Descargar Anexo en PDF (.pdf)
+            </a>
+          </div>
+        </div>
+
+        <!-- Detected Rubros in Balance -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2 mb-3">
+            <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C]">
+              Rubros con Saldo Detectados en tu Balance (Incluidos en Nota 2 con su Nombre Exacto)
+            </h4>
+            <span id="notes-dispensa-badge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full"></span>
+          </div>
+          <div id="notes-detected-rubros" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <!-- Preview Nota 1 -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
+            NOTA 1: Bases de Preparación de los Estados Contables (RT 54 - Res. P. 460/2024 CPCECABA)
+          </h4>
+          <div id="notes-preview-nota1" class="space-y-3 text-xs text-slate-700"></div>
+        </div>
+
+        <!-- Preview Nota 2 -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
+            NOTA 2: Políticas Contables Aplicadas (Criterios de Medición Respetando tus Nombres de Rubro)
+          </h4>
+          <div id="notes-preview-nota2" class="space-y-3 text-xs text-slate-700"></div>
+        </div>
+
+        <!-- Preview Nota 3 -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
+            NOTA 3: Vinculación con tus Cuadros de Detalle de Notas de Activo y Pasivo y Conciliación del Efectivo
+          </h4>
+          <div id="notes-preview-nota3" class="space-y-3 text-xs text-slate-700"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="bg-white border-t border-slate-200 mt-12 py-4">
     <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
@@ -533,7 +614,63 @@
       currentChecks = data.checks;
       window.lastValidationData = data;
       populateImprovedModal(data);
+      populateNotesModal(data);
       filterChecks('ALL');
+    }
+
+    function openNotesModal() {
+      document.getElementById('notes-modal').classList.remove('hidden');
+    }
+
+    function closeNotesModal() {
+      document.getElementById('notes-modal').classList.add('hidden');
+    }
+
+    function populateNotesModal(data) {
+      if (!data.tailored_notes_info) return;
+      const tni = data.tailored_notes_info;
+      document.getElementById('notes-dl-pdf').href = data.notes_pdf_url || '#';
+      document.getElementById('notes-dl-docx').href = data.notes_docx_url || '#';
+
+      const dispBadge = document.getElementById('notes-dispensa-badge');
+      if (tni.uses_legacy_rubro_names) {
+        dispBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300';
+        dispBadge.textContent = '✓ Dispensa Res. JG 660/2026 Activada (Conserva nombres tradicionales)';
+      } else {
+        dispBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300';
+        dispBadge.textContent = '✓ Nomenclatura NUA Directa (RT 54)';
+      }
+
+      document.getElementById('notes-detected-rubros').innerHTML = (tni.detected_rubros || []).map(r => `
+        <div class="px-3 py-1.5 rounded-lg border text-xs flex items-center gap-2 ${r.is_legacy_name ? 'bg-amber-50 border-amber-200 text-amber-950' : 'bg-emerald-50 border-emerald-200 text-emerald-950'}">
+          <span class="font-extrabold">${r.exact_name_in_balance}</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/80 text-slate-600 border border-slate-200">${r.section} • ${r.norm_ref}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('notes-preview-nota1').innerHTML = (tni.nota_1_bases || []).map(sec => `
+        <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+          <div class="font-bold text-[#0D1F3C]">${sec.subtitulo}</div>
+          <p class="leading-relaxed">${sec.texto}</p>
+        </div>
+      `).join('');
+
+      document.getElementById('notes-preview-nota2').innerHTML = (tni.nota_2_politicas || []).map(sec => `
+        <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="font-bold text-[#0D1F3C]">${sec.subtitulo}</div>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-100 text-emerald-900">${sec.norm_ref}</span>
+          </div>
+          <p class="leading-relaxed">${sec.texto}</p>
+        </div>
+      `).join('');
+
+      document.getElementById('notes-preview-nota3').innerHTML = (tni.nota_3_remision_cuadros || []).map(sec => `
+        <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+          <div class="font-bold text-[#0D1F3C]">${sec.subtitulo}</div>
+          <p class="leading-relaxed">${sec.texto}</p>
+        </div>
+      `).join('');
     }
 
     function openImprovedModal() {

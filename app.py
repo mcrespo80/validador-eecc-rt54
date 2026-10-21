@@ -11,6 +11,7 @@ from core.extractor import DocumentExtractor
 from core.validator import EECCValidator
 from core.report_pdf import generate_audit_report_pdf
 from core.remediator import generate_improved_eecc_package
+from core.notes_generator import generate_tailored_notes_package
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
@@ -95,6 +96,15 @@ async def validate_uploaded_file(
             extracted, result, improved_pdf_path, improved_docx_path
         )
 
+        # Generate Standalone Tailored Textual Notes Annex (RT 54 - Res. P. 460/2024) respecting exact rubric names
+        notes_pdf_name = f"Anexo_Textual_Notas_RT54_{job_id}.pdf"
+        notes_docx_name = f"Anexo_Textual_Notas_RT54_{job_id}.docx"
+        notes_pdf_path = os.path.join(REPORTS_DIR, notes_pdf_name)
+        notes_docx_path = os.path.join(REPORTS_DIR, notes_docx_name)
+        tailored_notes_info = generate_tailored_notes_package(
+            extracted, result, notes_pdf_path, notes_docx_path
+        )
+
         # Also copy the report and improved version to G:\Otros ordenadores\Mi Portátil (1)\MC\RT54 if accessible
         g_drive_rt54 = r"G:\Otros ordenadores\Mi Portátil (1)\MC\RT54"
         if os.path.exists(g_drive_rt54):
@@ -102,13 +112,18 @@ async def validate_uploaded_file(
                 shutil.copy(report_path, os.path.join(g_drive_rt54, "Ultimo_Reporte_Validacion_EECC.pdf"))
                 shutil.copy(improved_pdf_path, os.path.join(g_drive_rt54, "Ultima_Version_Mejorada_EECC_CPCECABA.pdf"))
                 shutil.copy(improved_docx_path, os.path.join(g_drive_rt54, "Ultima_Version_Mejorada_EECC_CPCECABA.docx"))
+                shutil.copy(notes_pdf_path, os.path.join(g_drive_rt54, "Ultimo_Anexo_Textual_Notas_RT54.pdf"))
+                shutil.copy(notes_docx_path, os.path.join(g_drive_rt54, "Ultimo_Anexo_Textual_Notas_RT54.docx"))
             except Exception:
                 pass
 
         result["report_pdf_url"] = f"/api/reports/{report_filename}"
         result["improved_pdf_url"] = f"/api/reports/{improved_pdf_name}"
         result["improved_docx_url"] = f"/api/reports/{improved_docx_name}"
+        result["notes_pdf_url"] = f"/api/reports/{notes_pdf_name}"
+        result["notes_docx_url"] = f"/api/reports/{notes_docx_name}"
         result["remediation_info"] = remediation_info
+        result["tailored_notes_info"] = tailored_notes_info
         return JSONResponse(content=result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al procesar el documento: {str(e)}")
@@ -146,10 +161,29 @@ async def validate_consejo_sample(
         extracted, result, improved_pdf_path, improved_docx_path
     )
 
+    notes_pdf_name = f"Anexo_Textual_Notas_RT54_{job_id}.pdf"
+    notes_docx_name = f"Anexo_Textual_Notas_RT54_{job_id}.docx"
+    notes_pdf_path = os.path.join(REPORTS_DIR, notes_pdf_name)
+    notes_docx_path = os.path.join(REPORTS_DIR, notes_docx_name)
+    tailored_notes_info = generate_tailored_notes_package(
+        extracted, result, notes_pdf_path, notes_docx_path
+    )
+
+    g_drive_rt54 = r"G:\Otros ordenadores\Mi Portátil (1)\MC\RT54"
+    if os.path.exists(g_drive_rt54):
+        try:
+            shutil.copy(notes_pdf_path, os.path.join(g_drive_rt54, "Ultimo_Anexo_Textual_Notas_RT54.pdf"))
+            shutil.copy(notes_docx_path, os.path.join(g_drive_rt54, "Ultimo_Anexo_Textual_Notas_RT54.docx"))
+        except Exception:
+            pass
+
     result["report_pdf_url"] = f"/api/reports/{report_filename}"
     result["improved_pdf_url"] = f"/api/reports/{improved_pdf_name}"
     result["improved_docx_url"] = f"/api/reports/{improved_docx_name}"
+    result["notes_pdf_url"] = f"/api/reports/{notes_pdf_name}"
+    result["notes_docx_url"] = f"/api/reports/{notes_docx_name}"
     result["remediation_info"] = remediation_info
+    result["tailored_notes_info"] = tailored_notes_info
     return JSONResponse(content=result)
 
 
