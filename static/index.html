@@ -1673,27 +1673,6 @@
         </html>
       `;
       const blob = new Blob(['\ufeff', htmlContent], { type: 'application/vnd.ms-excel' });
-          <h2>${car.razonSocial} — ESTADO DE SITUACIÓN PATRIMONIAL</h2>
-          ${document.getElementById('mp-esp-table').outerHTML}
-          <br><br>
-          <h2>ESTADO DE RECURSOS Y GASTOS / RESULTADOS</h2>
-          ${document.getElementById('mp-eerr-table').outerHTML}
-          <br><br>
-          <h2>ESTADO DE EVOLUCIÓN DEL PATRIMONIO NETO</h2>
-          ${document.getElementById('mp-eepn-table').outerHTML}
-          <br><br>
-          <h2>ESTADO DE FLUJOS DE EFECTIVO</h2>
-          ${document.getElementById('mp-efe-table').outerHTML}
-          <br><br>
-          <h2>CUADROS DE NOTAS DE COMPOSICIÓN DE ACTIVO Y PASIVO</h2>
-          ${document.getElementById('mp-cuadros-container').innerHTML}
-          <br><br>
-          <h2>ANEXOS CONTABLES</h2>
-          ${document.getElementById('mp-anexos-container').innerHTML}
-        </body>
-        </html>
-      `;
-      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/vnd.ms-excel' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
