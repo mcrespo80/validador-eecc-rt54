@@ -118,6 +118,70 @@ class DocumentExtractor:
             raise ValueError(f"Formato de archivo no soportado: {ext}")
 
     @staticmethod
+    def _group_pdf_words_into_table_lines(words: List[Tuple]) -> List[str]:
+        """
+        Groups PyMuPDF words (x0, y0, x1, y1, word, block_no, line_no, word_no)
+        by vertical coordinate y0 (within 4.2pt tolerance) so multi-column tables
+        (like side-by-side ESP Activo | Pasivo, or Rubro | 2026 | 2025) stay on the
+        same line separated by ' | ' when horizontal gap > 14pt.
+        """
+        if not words:
+            return []
+        # Sort top-to-bottom (bucketed by 4pt), then left-to-right
+        sorted_w = sorted(words, key=lambda w: (round(w[1] / 4.0), w[0]))
+        rows: List[List[Tuple]] = []
+        cur_row: List[Tuple] = []
+        cur_y: Optional[float] = None
+
+        for w in sorted_w:
+            y0 = w[1]
+            if cur_y is None or abs(y0 - cur_y) <= 4.5:
+                cur_row.append(w)
+                if cur_y is None:
+                    cur_y = y0
+                else:
+                    cur_y = (cur_y * (len(cur_row) - 1) + y0) / len(cur_row)
+            else:
+                rows.append(cur_row)
+                cur_row = [w]
+                cur_y = y0
+        if cur_row:
+            rows.append(cur_row)
+
+        num_pat = re.compile(r"^\(?-?(?:\d{1,3}(?:\.\d{3})+|\d+),\d{2}\)?$")
+        result_lines: List[str] = []
+        for r in rows:
+            r.sort(key=lambda w: w[0])
+            cells: List[str] = []
+            cur_tokens: List[str] = [r[0][4]]
+            prev_x1: float = r[0][2]
+            for w in r[1:]:
+                tok = w[4]
+                prev_tok = cur_tokens[-1] if cur_tokens else ""
+                gap = w[0] - prev_x1
+                is_prev_num = bool(num_pat.match(prev_tok))
+                is_curr_num = bool(num_pat.match(tok))
+                # Split cell if horizontal gap > 14pt, OR if transitioning between an accounting amount and another column
+                if (
+                    gap > 14.0
+                    or (is_prev_num and (is_curr_num or re.match(r"^[A-Za-zÁÉÍÓÚÑáéíóúñ]", tok)))
+                    or (is_curr_num and gap > 4.5 and not prev_tok.endswith("$"))
+                ):
+                    cells.append(" ".join(cur_tokens).strip())
+                    cur_tokens = [tok]
+                else:
+                    cur_tokens.append(tok)
+                prev_x1 = max(prev_x1, w[2])
+            if cur_tokens:
+                cells.append(" ".join(cur_tokens).strip())
+            cells = [c for c in cells if c]
+            if len(cells) > 1:
+                result_lines.append(" | ".join(cells))
+            elif cells:
+                result_lines.append(cells[0])
+        return result_lines
+
+    @staticmethod
     def _extract_pdf(file_path: str, file_name: str, file_size: int) -> Dict[str, Any]:
         doc = pymupdf.open(file_path)
         pages_data = []
@@ -127,47 +191,61 @@ class DocumentExtractor:
 
         for idx, page in enumerate(doc):
             page_num = idx + 1
-            text = page.get_text("text").strip()
+            words = page.get_text("words")
+            raw_text = page.get_text("text").strip()
             used_ocr = False
 
-            # If native text is very sparse (< 60 chars), run RapidOCR on rendered page
-            if len(text) < 60:
+            # Check if page has embedded table images or sparse native text
+            imgs = page.get_images()
+            needs_ocr = len(raw_text) < 60 or (len(imgs) >= 1 and len(raw_text) < 850 and not re.search(r"\d{1,3}(?:\.\d{3})+,\d{2}", raw_text))
+
+            if not needs_ocr and words:
+                grouped_table_lines = DocumentExtractor._group_pdf_words_into_table_lines(words)
+                text = "\n".join(grouped_table_lines)
+            else:
+                text = raw_text
+
+            if needs_ocr:
                 try:
                     pix = page.get_pixmap(dpi=200)
                     img_bytes = pix.tobytes("png")
                     ocr = get_ocr_engine()
                     ocr_res, _ = ocr(img_bytes)
                     if ocr_res:
-                        # Sort by vertical coordinate (top to bottom), then horizontal
                         ocr_lines = []
                         for item in ocr_res:
                             box, txt, score = item[0], item[1], item[2]
                             y_top = box[0][1]
                             x_left = box[0][0]
-                            ocr_lines.append((y_top, x_left, txt))
-                        # Group items on roughly the same horizontal line (within 12px Y)
+                            x_right = box[1][0]
+                            ocr_lines.append((y_top, x_left, x_right, txt))
                         ocr_lines.sort(key=lambda x: (round(x[0] / 12), x[1]))
                         grouped_lines = []
                         current_y = None
                         current_line = []
-                        for y_top, x_left, txt in ocr_lines:
+                        for y_top, x_left, x_right, txt in ocr_lines:
                             if current_y is None or abs(y_top - current_y) <= 14:
-                                current_line.append((x_left, txt))
+                                current_line.append((x_left, x_right, txt))
                                 if current_y is None:
                                     current_y = y_top
                             else:
                                 current_line.sort(key=lambda x: x[0])
-                                grouped_lines.append("   ".join(t[1] for t in current_line))
-                                current_line = [(x_left, txt)]
+                                grouped_lines.append(" | ".join(t[2] for t in current_line))
+                                current_line = [(x_left, x_right, txt)]
                                 current_y = y_top
                         if current_line:
                             current_line.sort(key=lambda x: x[0])
-                            grouped_lines.append("   ".join(t[1] for t in current_line))
-                        text = "\n".join(grouped_lines)
+                            grouped_lines.append(" | ".join(t[2] for t in current_line))
+                        ocr_text = "\n".join(grouped_lines)
+                        if len(ocr_text) > len(text):
+                            text = ocr_text
+                        else:
+                            text = text + "\n" + ocr_text
                         used_ocr = True
                         ocr_pages_count += 1
                 except Exception as e:
-                    text = f"[Error OCR en página {page_num}: {e}]"
+                    if not text:
+                        text = f"[Error OCR en página {page_num}: {e}]"
 
             pages_data.append({
                 "page_number": page_num,

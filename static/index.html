@@ -294,65 +294,181 @@
 
   </main>
 
-  <!-- MODAL: VER VERSIÓN MEJORADA (LISTA PARA CONSEJO CPCECABA) -->
-  <div id="improved-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+  <!-- MODAL: VER VERSIÓN MEJORADA (FORMATO HOMOLOGADO MICPROJECT) -->
+  <div id="improved-modal" class="hidden fixed inset-0 z-50 bg-slate-900/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-7xl w-full max-h-[94vh] flex flex-col overflow-hidden">
       <!-- Modal Header -->
-      <div class="navy-gradient text-white px-6 py-4 flex items-center justify-between border-b border-[#C59B27]/40">
+      <div class="navy-gradient text-white px-6 py-4 flex items-center justify-between border-b border-[#C59B27]/40 shrink-0">
         <div>
           <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded bg-[#C59B27] text-slate-950 text-[10px] font-black uppercase">Auto-Remediación RT 54 + RT 37</span>
-            <h3 class="text-base font-extrabold tracking-wide">Versión Mejorada Lista para Presentar en Consejo (CPCECABA)</h3>
+            <span class="px-2.5 py-0.5 rounded bg-[#C59B27] text-slate-950 text-[10px] font-black uppercase tracking-wider">Formato Homologado MICPROJECT</span>
+            <span class="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 text-[10px] font-black uppercase tracking-wider">RT 54 (T.O. RT 59) + RT 37</span>
+            <h3 class="text-base font-extrabold tracking-wide" id="modal-mp-title">Estados Contables Homologados</h3>
           </div>
-          <p class="text-xs text-slate-300 mt-0.5">
-            Documento depurado sin rubros en cero, con nomenclatura NUA, Notas RT 54 (Res. P. 460/2024), Anexos de Previsiones/Gastos e Informe del Auditor RT 37 (mod. RT 53).
+          <p class="text-xs text-slate-300 mt-1">
+            Visualización interactiva, cuadros apaisados y verticales A4, CabeceraEECC, DobleFirmaEECC, y exportación directa a PDF, Word (.docx / .doc) y Excel.
           </p>
         </div>
-        <button onclick="closeImprovedModal()" class="text-slate-300 hover:text-white p-1.5 rounded-lg bg-white/10">
+        <button onclick="closeImprovedModal()" class="text-slate-300 hover:text-white p-2 rounded-xl bg-white/10 hover:bg-white/20 transition">
           ✕
         </button>
       </div>
 
-      <!-- Modal Body -->
-      <div class="p-6 overflow-y-auto space-y-6 flex-1 bg-slate-50">
-        <!-- Download Action Bar -->
-        <div class="bg-white p-4 rounded-xl border border-[#C59B27]/50 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h4 class="text-sm font-bold text-[#0D1F3C]">Archivos Finales Generados para Legalizaciones Web</h4>
-            <p class="text-xs text-slate-500">También se guardó copia automática en tu carpeta <code class="bg-slate-100 px-1 rounded">MC\RT54\Ultima_Version_Mejorada_EECC_CPCECABA</code></p>
+      <!-- Action Bar (Downloads) -->
+      <div class="bg-slate-100 border-b border-slate-200 px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+        <div class="text-xs text-slate-600">
+          <strong class="text-[#0D1F3C]">Exportación Multiformato:</strong> Archivos listos para legalización en CPCECABA y presentación oficial.
+        </div>
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <a id="modal-dl-pdf" href="#" target="_blank" class="px-3.5 py-2 rounded-lg bg-[#0D1F3C] hover:bg-[#1A365D] text-white text-xs font-bold shadow flex items-center gap-1.5 transition">
+            📄 Descargar PDF
+          </a>
+          <a id="modal-dl-docx" href="#" target="_blank" class="px-3.5 py-2 rounded-lg bg-[#C59B27] hover:bg-[#b08920] text-slate-950 text-xs font-extrabold shadow flex items-center gap-1.5 transition">
+            📝 Descargar Word (.docx)
+          </a>
+          <button onclick="exportMpWordDoc()" class="px-3.5 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold shadow flex items-center gap-1.5 transition">
+            📋 Exportar Word (.doc)
+          </button>
+          <button onclick="exportMpExcel()" class="px-3.5 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow flex items-center gap-1.5 transition">
+            📊 Exportar Excel (.xls)
+          </button>
+        </div>
+      </div>
+
+      <!-- Multi-Tab Navigation Bar -->
+      <div class="bg-white border-b border-slate-200 px-6 pt-2 flex flex-wrap gap-1.5 shrink-0 overflow-x-auto" id="mp-tabs-bar">
+        <button onclick="switchMpTab('esp')" id="tab-mp-btn-esp" class="px-3.5 py-2 rounded-t-lg text-xs font-extrabold border-b-2 border-[#0D1F3C] text-[#0D1F3C] bg-slate-50 transition">
+          🏛️ Situación Patrimonial (ESP)
+        </button>
+        <button onclick="switchMpTab('eerr')" id="tab-mp-btn-eerr" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          📊 Recursos y Gastos (EERR)
+        </button>
+        <button onclick="switchMpTab('eepn')" id="tab-mp-btn-eepn" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          📈 Evolución Patrimonio Neto (EEPN)
+        </button>
+        <button onclick="switchMpTab('efe')" id="tab-mp-btn-efe" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          💧 Flujo de Efectivo (EFE)
+        </button>
+        <button onclick="switchMpTab('cuadros')" id="tab-mp-btn-cuadros" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          📑 Cuadros Notas Activo/Pasivo (<span id="mp-badge-cnt-cuadros">0</span>)
+        </button>
+        <button onclick="switchMpTab('anexos')" id="tab-mp-btn-anexos" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          📁 Anexos A a E (<span id="mp-badge-cnt-anexos">0</span>)
+        </button>
+        <button onclick="switchMpTab('notas')" id="tab-mp-btn-notas" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          📝 Notas Textuales RT 54
+        </button>
+        <button onclick="switchMpTab('auditor')" id="tab-mp-btn-auditor" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          📋 Informe Auditor RT 37
+        </button>
+        <button onclick="switchMpTab('cambios')" id="tab-mp-btn-cambios" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          ✨ Resumen Mejoras
+        </button>
+        <button onclick="switchMpTab('a4all')" id="tab-mp-btn-a4all" class="px-3.5 py-2 rounded-t-lg text-xs font-extrabold bg-[#C59B27]/20 text-[#0D1F3C] border-b-2 border-[#C59B27] transition ml-auto">
+          🖨️ Vista A4 Completa
+        </button>
+      </div>
+
+      <!-- Modal Body (Tab Panels) -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 bg-slate-50" id="mp-modal-body">
+        <!-- TAB PANEL: ESP (Side-by-side 2 tables) -->
+        <div id="panel-mp-esp" class="space-y-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div id="mp-esp-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
+            <div class="overflow-x-auto">
+              <table id="mp-esp-table" class="w-full text-xs border-collapse border border-black"></table>
+            </div>
+            <div id="mp-esp-firma" class="mt-6 pt-4 border-t border-slate-300"></div>
           </div>
-          <div class="flex flex-wrap items-center gap-2.5 shrink-0">
-            <a id="modal-dl-pdf" href="#" target="_blank" class="px-4 py-2.5 rounded-lg bg-[#0D1F3C] hover:bg-[#1A365D] text-white text-xs font-bold shadow flex items-center gap-2 transition">
-              📄 Descargar PDF Final (Para Consejo)
-            </a>
-            <a id="modal-dl-docx" href="#" target="_blank" class="px-4 py-2.5 rounded-lg bg-[#C59B27] hover:bg-[#b08920] text-slate-950 text-xs font-extrabold shadow flex items-center gap-2 transition">
-              📝 Descargar Word Editable (.docx)
-            </a>
+        </div>
+
+        <!-- TAB PANEL: EERR -->
+        <div id="panel-mp-eerr" class="hidden space-y-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div id="mp-eerr-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
+            <div class="overflow-x-auto">
+              <table id="mp-eerr-table" class="w-full text-xs border-collapse border border-black"></table>
+            </div>
+            <div id="mp-eerr-firma" class="mt-6 pt-4 border-t border-slate-300"></div>
           </div>
         </div>
 
-        <!-- Applied Automatic Corrections -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
-            1. Correcciones y Adecuaciones Normativas Aplicadas Automáticamente
-          </h4>
-          <div id="modal-applied-changes" class="space-y-2.5 text-xs"></div>
+        <!-- TAB PANEL: EEPN -->
+        <div id="panel-mp-eepn" class="hidden space-y-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div id="mp-eepn-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
+            <div class="overflow-x-auto">
+              <table id="mp-eepn-table" class="w-full text-xs border-collapse border border-black"></table>
+            </div>
+            <div id="mp-eepn-firma" class="mt-6 pt-4 border-t border-slate-300"></div>
+          </div>
         </div>
 
-        <!-- Preview of Mandatory RT 54 Notes -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
-            2. Vista Previa de Notas Obligatorias RT 54 Incorporadas (Moneda Homogénea, Categoría, Dispensas y Previsiones)
-          </h4>
-          <div id="modal-notas-preview" class="space-y-4 text-xs text-slate-700"></div>
+        <!-- TAB PANEL: EFE -->
+        <div id="panel-mp-efe" class="hidden space-y-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <div id="mp-efe-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
+            <div class="overflow-x-auto">
+              <table id="mp-efe-table" class="w-full text-xs border-collapse border border-black"></table>
+            </div>
+            <div class="mt-3 text-[11px] text-slate-600 italic">
+              * Nota de Conciliación del Efectivo (RT 54 párr. 672 inc. a): El saldo de Efectivo y sus equivalentes al cierre concilia directamente con el rubro Caja y Bancos del Estado de Situación Patrimonial.
+            </div>
+            <div id="mp-efe-firma" class="mt-6 pt-4 border-t border-slate-300"></div>
+          </div>
         </div>
 
-        <!-- Preview of RT 37 (mod. RT 53) Auditor Report -->
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
-            3. Vista Previa del Informe del Auditor Independiente Blindado (RT 37 mod. RT 53 - Res. CD 46/2021 CPCECABA)
-          </h4>
-          <div id="modal-auditor-preview" class="space-y-3 text-xs text-slate-700"></div>
+        <!-- TAB PANEL: CUADROS DE NOTAS ACTIVO Y PASIVO -->
+        <div id="panel-mp-cuadros" class="hidden space-y-6">
+          <div id="mp-cuadros-container" class="space-y-6"></div>
+        </div>
+
+        <!-- TAB PANEL: ANEXOS A a E -->
+        <div id="panel-mp-anexos" class="hidden space-y-6">
+          <div id="mp-anexos-container" class="space-y-6"></div>
+        </div>
+
+        <!-- TAB PANEL: NOTAS TEXTUALES RT 54 -->
+        <div id="panel-mp-notas" class="hidden space-y-4">
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h4 class="text-sm font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-200 pb-2 mb-4">
+              Anexo Textual de Notas a los Estados Contables (RT 54 - T.O. RT 59)
+            </h4>
+            <div id="modal-notas-preview" class="space-y-5 text-xs text-slate-700"></div>
+          </div>
+        </div>
+
+        <!-- TAB PANEL: INFORME DEL AUDITOR RT 37 -->
+        <div id="panel-mp-auditor" class="hidden space-y-4">
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h4 class="text-sm font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-200 pb-2 mb-4">
+              Informe de Auditoría Emitido por el Auditor Independiente (RT 37 mod. RT 53)
+            </h4>
+            <div id="modal-auditor-preview" class="space-y-4 text-xs text-slate-700"></div>
+          </div>
+        </div>
+
+        <!-- TAB PANEL: RESUMEN MEJORAS -->
+        <div id="panel-mp-cambios" class="hidden space-y-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
+              Adecuaciones Normativas y Correcciones Aplicadas Automáticamente
+            </h4>
+            <div id="modal-applied-changes" class="space-y-2.5 text-xs"></div>
+          </div>
+        </div>
+
+        <!-- TAB PANEL: VISTA A4 COMPLETA -->
+        <div id="panel-mp-a4all" class="hidden space-y-8">
+          <div class="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200">
+            <div class="text-xs text-slate-600">
+              <strong>Vista Preliminar de Impresión:</strong> Cada estado y anexo está maquetado en su propia hoja A4 (Vertical u Horizontal) con CabeceraEECC y DobleFirmaEECC.
+            </div>
+            <button onclick="window.print()" class="px-4 py-2 rounded-lg bg-[#0D1F3C] hover:bg-[#1A365D] text-white text-xs font-bold shadow flex items-center gap-1.5 transition">
+              🖨️ Imprimir Todo
+            </button>
+          </div>
+          <div id="mp-a4all-container" class="space-y-10"></div>
         </div>
       </div>
     </div>
@@ -681,35 +797,493 @@
       document.getElementById('improved-modal').classList.add('hidden');
     }
 
+    let activeMpTab = 'esp';
+    function switchMpTab(tabId) {
+      activeMpTab = tabId;
+      const tabs = ['esp', 'eerr', 'eepn', 'efe', 'cuadros', 'anexos', 'notas', 'auditor', 'cambios', 'a4all'];
+      tabs.forEach(t => {
+        const p = document.getElementById(`panel-mp-${t}`);
+        const b = document.getElementById(`tab-mp-btn-${t}`);
+        if (p) p.classList.toggle('hidden', t !== tabId);
+        if (b) {
+          if (t === tabId) {
+            b.className = 'px-3.5 py-2 rounded-t-lg text-xs font-extrabold border-b-2 border-[#0D1F3C] text-[#0D1F3C] bg-slate-50 transition';
+          } else {
+            b.className = 'px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition';
+          }
+        }
+      });
+    }
+
+    function fmtMpNum(val, dashZero = false) {
+      if (val === null || val === undefined) return '-';
+      if (Math.abs(val) < 0.005) return dashZero ? '-' : '0,00';
+      const isNeg = val < 0;
+      const absV = Math.abs(val);
+      const s = absV.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return isNeg ? `(${s})` : s;
+    }
+
+    function makeMpCabeceraHtml(car, title, subtitle = null) {
+      const sub = subtitle || `Por el ejercicio finalizado el ${car.fechaCierre} comparativo con el ejercicio anterior (${car.fechaComparativo}). En pesos en moneda homogénea (Nota 1.3).`;
+      return `
+        <div class="border-b-2 border-black pb-2 mb-3 text-left">
+          <div class="flex justify-between items-center text-xs font-black uppercase text-black tracking-wide">
+            <span>${car.rnos ? 'AGENTE DEL SEGURO DE SALUD: ' : ''}${car.razonSocial}</span>
+            <span class="text-[11px] font-semibold text-slate-600">${car.rnos ? 'RNOS: ' + car.rnos + ' | ' : ''}CUIT: ${car.cuit}</span>
+          </div>
+        </div>
+        <div class="text-center my-2">
+          <h3 class="text-sm font-black uppercase tracking-wider text-black">${title}</h3>
+          <p class="text-[11px] italic text-slate-700 mt-0.5">${sub}</p>
+        </div>
+      `;
+    }
+
+    function makeMpDobleFirmaHtml(car) {
+      return `
+        <div class="text-center text-[11px] italic text-slate-600 mb-6">
+          Las Notas y los Anexos que se acompañan forman parte integrante de estos Estados Contables.
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 text-center text-xs">
+          <div class="flex flex-col items-center">
+            <span class="text-[11px] italic text-slate-700 mb-6">Firmado a los efectos de su identificación con mi informe de fecha ${car.fechaCertificacion}.-</span>
+            <div class="w-48 border-t border-dashed border-black pt-1 font-bold text-slate-900">${car.auditorNombre}</div>
+            <div class="text-[11px] text-slate-600">Contador Público — ${car.auditorMatricula}</div>
+          </div>
+          <div class="flex flex-col items-center">
+            <span class="text-[11px] italic text-transparent mb-6">.</span>
+            <div class="w-48 border-t border-dashed border-black pt-1 font-bold text-slate-900">${car.firmanteNombre}</div>
+            <div class="text-[11px] text-slate-600">${car.firmanteCargo} — ${car.razonSocial}</div>
+          </div>
+        </div>
+      `;
+    }
+
     function populateImprovedModal(data) {
       if (!data.remediation_info) return;
       const rem = data.remediation_info;
+      const eecc = rem.eecc_structured;
+      if (!eecc) return;
+      const car = eecc.caratulaData;
+
       document.getElementById('modal-dl-pdf').href = data.improved_pdf_url || '#';
       document.getElementById('modal-dl-docx').href = data.improved_docx_url || '#';
+      document.getElementById('modal-mp-title').textContent = `${car.razonSocial} — Cierre al ${car.fechaCierre}`;
 
+      // 1. ESP TABLE
+      document.getElementById('mp-esp-cabecera').innerHTML = makeMpCabeceraHtml(car, 'ESTADO DE SITUACIÓN PATRIMONIAL', `Al ${car.fechaCierre} comparativo con el ejercicio anterior (${car.fechaComparativo}). En pesos en moneda homogénea (Nota 1.3).`);
+      document.getElementById('mp-esp-firma').innerHTML = makeMpDobleFirmaHtml(car);
+
+      const esp = eecc.esp;
+      let leftRows = [{ label: 'ACTIVO CORRIENTE', isHeader: true }];
+      esp.activoCorriente.forEach(r => leftRows.push({ label: r.label + (r.nota ? ` (${r.nota})` : ''), act: r.actual, ant: r.anterior }));
+      leftRows.push({ label: 'Total del Activo Corriente', act: esp.totalActivoCorriente.actual, ant: esp.totalActivoCorriente.anterior, isSubtot: true });
+      leftRows.push({ label: 'ACTIVO NO CORRIENTE', isHeader: true });
+      esp.activoNoCorriente.forEach(r => leftRows.push({ label: r.label + (r.nota ? ` (${r.nota})` : ''), act: r.actual, ant: r.anterior }));
+      leftRows.push({ label: 'Total del Activo No Corriente', act: esp.totalActivoNoCorriente.actual, ant: esp.totalActivoNoCorriente.anterior, isSubtot: true });
+
+      let rightRows = [{ label: 'PASIVO CORRIENTE', isHeader: true }];
+      esp.pasivoCorriente.forEach(r => rightRows.push({ label: r.label + (r.nota ? ` (${r.nota})` : ''), act: r.actual, ant: r.anterior }));
+      rightRows.push({ label: 'Total del Pasivo Corriente', act: esp.totalPasivoCorriente.actual, ant: esp.totalPasivoCorriente.anterior, isSubtot: true });
+      rightRows.push({ label: 'PASIVO NO CORRIENTE', isHeader: true });
+      esp.pasivoNoCorriente.forEach(r => rightRows.push({ label: r.label + (r.nota ? ` (${r.nota})` : ''), act: r.actual, ant: r.anterior }));
+      rightRows.push({ label: 'Total del Pasivo No Corriente', act: esp.totalPasivoNoCorriente.actual, ant: esp.totalPasivoNoCorriente.anterior, isSubtot: true });
+      rightRows.push({ label: 'Total del Pasivo', act: esp.totalPasivo.actual, ant: esp.totalPasivo.anterior, isSubtot: true });
+      rightRows.push({ label: 'PATRIMONIO NETO', isHeader: true });
+      rightRows.push({ label: 'Patrimonio Neto (según estado correspondiente)', act: esp.patrimonioNeto.actual, ant: esp.patrimonioNeto.anterior, isSubtot: true });
+
+      const maxR = Math.max(leftRows.length, rightRows.length);
+      while (leftRows.length < maxR) leftRows.push({ label: '', act: null, ant: null });
+      while (rightRows.length < maxR) rightRows.push({ label: '', act: null, ant: null });
+
+      let espRowsHtml = `
+        <thead class="bg-slate-200 font-extrabold text-black">
+          <tr>
+            <th class="p-2 border border-black text-left">ACTIVO</th>
+            <th class="p-2 border border-black text-right w-24">${car.fechaCierre}</th>
+            <th class="p-2 border border-black text-right w-24 border-r-2 border-r-black">${car.fechaComparativo}</th>
+            <th class="p-2 border border-black text-left">PASIVO Y PATRIMONIO NETO</th>
+            <th class="p-2 border border-black text-right w-24">${car.fechaCierre}</th>
+            <th class="p-2 border border-black text-right w-24">${car.fechaComparativo}</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+      for (let i = 0; i < maxR; i++) {
+        const l = leftRows[i];
+        const r = rightRows[i];
+        const lBg = l.isHeader ? 'bg-slate-100 font-black' : (l.isSubtot ? 'font-bold bg-slate-50' : '');
+        const rBg = r.isHeader ? 'bg-slate-100 font-black' : (r.isSubtot ? 'font-bold bg-slate-50' : '');
+        espRowsHtml += `
+          <tr class="hover:bg-amber-50/30">
+            <td class="p-1.5 border border-slate-300 ${lBg}">${l.label}</td>
+            <td class="p-1.5 border border-slate-300 text-right ${lBg}">${l.isHeader ? '' : fmtMpNum(l.act)}</td>
+            <td class="p-1.5 border border-slate-300 text-right border-r-2 border-r-black ${lBg}">${l.isHeader ? '' : fmtMpNum(l.ant)}</td>
+            <td class="p-1.5 border border-slate-300 ${rBg}">${r.label}</td>
+            <td class="p-1.5 border border-slate-300 text-right ${rBg}">${r.isHeader ? '' : fmtMpNum(r.act)}</td>
+            <td class="p-1.5 border border-slate-300 text-right ${rBg}">${r.isHeader ? '' : fmtMpNum(r.ant)}</td>
+          </tr>
+        `;
+      }
+      espRowsHtml += `
+        <tr class="bg-slate-200 font-black border-t-2 border-black">
+          <td class="p-2 border border-black text-left">TOTAL DEL ACTIVO</td>
+          <td class="p-2 border border-black text-right font-black">$ ${fmtMpNum(esp.totalActivo.actual)}</td>
+          <td class="p-2 border border-black text-right font-black border-r-2 border-r-black">$ ${fmtMpNum(esp.totalActivo.anterior)}</td>
+          <td class="p-2 border border-black text-left">TOTAL DEL PASIVO Y PATRIMONIO NETO</td>
+          <td class="p-2 border border-black text-right font-black">$ ${fmtMpNum(esp.totalPasivoYPN.actual)}</td>
+          <td class="p-2 border border-black text-right font-black">$ ${fmtMpNum(esp.totalPasivoYPN.anterior)}</td>
+        </tr>
+      </tbody>`;
+      document.getElementById('mp-esp-table').innerHTML = espRowsHtml;
+
+      // 2. EERR TABLE
+      document.getElementById('mp-eerr-cabecera').innerHTML = makeMpCabeceraHtml(car, eecc.eerr.titulo);
+      document.getElementById('mp-eerr-firma').innerHTML = makeMpDobleFirmaHtml(car);
+      let eerrHtml = `
+        <thead class="bg-slate-200 font-extrabold text-black">
+          <tr>
+            <th class="p-2 border border-black text-left">RUBROS / CONCEPTOS</th>
+            <th class="p-2 border border-black text-center w-32">NOTA / ANEXO</th>
+            <th class="p-2 border border-black text-right w-36">EJERCICIO ${car.fechaCierre} ($)</th>
+            <th class="p-2 border border-black text-right w-36">EJERCICIO ${car.fechaComparativo} ($)</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+      eecc.eerr.filas.forEach(r => {
+        const bg = r.isHeader ? 'bg-slate-100 font-black uppercase' : (r.isTotal ? 'bg-slate-200 font-black border-t-2 border-black' : (r.isSubtotal ? 'font-bold bg-slate-50' : ''));
+        eerrHtml += `
+          <tr class="${bg} hover:bg-amber-50/30">
+            <td class="p-2 border border-slate-300 ${bg}">${r.label}</td>
+            <td class="p-2 border border-slate-300 text-center text-slate-600">${r.nota || ''}</td>
+            <td class="p-2 border border-slate-300 text-right">${r.isHeader ? '' : fmtMpNum(r.actual, true)}</td>
+            <td class="p-2 border border-slate-300 text-right">${r.isHeader ? '' : fmtMpNum(r.anterior, true)}</td>
+          </tr>
+        `;
+      });
+      eerrHtml += `</tbody>`;
+      document.getElementById('mp-eerr-table').innerHTML = eerrHtml;
+
+      // 3. EEPN TABLE
+      document.getElementById('mp-eepn-cabecera').innerHTML = makeMpCabeceraHtml(car, eecc.eepn.titulo);
+      document.getElementById('mp-eepn-firma').innerHTML = makeMpDobleFirmaHtml(car);
+      let eepnHtml = `
+        <thead class="bg-slate-200 font-extrabold text-black">
+          <tr>
+            <th rowspan="2" class="p-2 border border-black text-left">RUBROS / MOVIMIENTOS</th>
+            <th colspan="3" class="p-1 border border-black text-center">APORTES DE LOS ASOCIADOS / PROPIETARIOS</th>
+            <th colspan="2" class="p-1 border border-black text-center">SUPERÁVITS / RESULTADOS ACUMULADOS</th>
+            <th colspan="2" class="p-1 border border-black text-center">TOTALES PATRIMONIO NETO</th>
+          </tr>
+          <tr>
+            <th class="p-1.5 border border-black text-right w-20">Capital</th>
+            <th class="p-1.5 border border-black text-right w-20">Ajuste Capital</th>
+            <th class="p-1.5 border border-black text-right w-20">Total Aportes</th>
+            <th class="p-1.5 border border-black text-right w-20">Reservados</th>
+            <th class="p-1.5 border border-black text-right w-20">No Asignados</th>
+            <th class="p-1.5 border border-black text-right w-24">${car.fechaCierre}</th>
+            <th class="p-1.5 border border-black text-right w-24">${car.fechaComparativo}</th>
+          </tr>
+        </thead>
+        <tbody>
+      `;
+      eecc.eepn.filas.forEach(r => {
+        const bg = r.isTotal ? 'bg-slate-200 font-black border-t-2 border-black' : (r.isSubtotal ? 'font-bold bg-slate-50' : '');
+        eepnHtml += `
+          <tr class="${bg} hover:bg-amber-50/30">
+            <td class="p-2 border border-slate-300 ${bg}">${r.concepto}</td>
+            <td class="p-2 border border-slate-300 text-right">${fmtMpNum(r.capital, true)}</td>
+            <td class="p-2 border border-slate-300 text-right">${fmtMpNum(r.ajuste, true)}</td>
+            <td class="p-2 border border-slate-300 text-right font-semibold">${fmtMpNum(r.totalAportes, true)}</td>
+            <td class="p-2 border border-slate-300 text-right">${fmtMpNum(r.reservados, true)}</td>
+            <td class="p-2 border border-slate-300 text-right">${fmtMpNum(r.noAsignados, true)}</td>
+            <td class="p-2 border border-slate-300 text-right font-black">${fmtMpNum(r.totalActual, true)}</td>
+            <td class="p-2 border border-slate-300 text-right font-black">${fmtMpNum(r.totalComparativo, true)}</td>
+          </tr>
+        `;
+      });
+      eepnHtml += `</tbody>`;
+      document.getElementById('mp-eepn-table').innerHTML = eepnHtml;
+
+      // 4. EFE TABLE
+      document.getElementById('mp-efe-cabecera').innerHTML = makeMpCabeceraHtml(car, eecc.efe.titulo);
+      document.getElementById('mp-efe-firma').innerHTML = makeMpDobleFirmaHtml(car);
+      let efeHtml = `
+        <thead class="bg-slate-200 font-extrabold text-black">
+          <tr>
+            <th class="p-2 border border-black text-left">CONCEPTOS</th>
+            <th class="p-2 border border-black text-right w-40">EJERCICIO ${car.fechaCierre} ($)</th>
+            <th class="p-2 border border-black text-right w-40">EJERCICIO ${car.fechaComparativo} ($)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="bg-slate-100 font-black"><td colspan="3" class="p-2 border border-black">I. VARIACIÓN DEL EFECTIVO Y SUS EQUIVALENTES</td></tr>
+      `;
+      eecc.efe.variacion.forEach(r => {
+        const bg = r.isTotal ? 'font-black bg-slate-50' : '';
+        efeHtml += `
+          <tr class="${bg} hover:bg-amber-50/30">
+            <td class="p-2 border border-slate-300 ${bg}">${r.label}</td>
+            <td class="p-2 border border-slate-300 text-right font-bold">${fmtMpNum(r.actual)}</td>
+            <td class="p-2 border border-slate-300 text-right font-bold">${fmtMpNum(r.anterior)}</td>
+          </tr>
+        `;
+      });
+      efeHtml += `<tr class="bg-slate-100 font-black"><td colspan="3" class="p-2 border border-black">II. CAUSAS DE LAS VARIACIONES DEL EFECTIVO</td></tr>`;
+      eecc.efe.causas.forEach(r => {
+        const bg = r.isHeader ? 'bg-slate-50 font-black text-slate-800' : (r.isTotal ? 'font-black bg-slate-100 border-t border-black' : '');
+        efeHtml += `
+          <tr class="${bg} hover:bg-amber-50/30">
+            <td class="p-2 border border-slate-300 ${bg}">${r.label}</td>
+            <td class="p-2 border border-slate-300 text-right">${r.isHeader ? '' : fmtMpNum(r.actual, true)}</td>
+            <td class="p-2 border border-slate-300 text-right">${r.isHeader ? '' : fmtMpNum(r.anterior, true)}</td>
+          </tr>
+        `;
+      });
+      efeHtml += `</tbody>`;
+      document.getElementById('mp-efe-table').innerHTML = efeHtml;
+
+      // 5. CUADROS DE NOTAS ACTIVO Y PASIVO (13 sub-tables)
+      document.getElementById('mp-badge-cnt-cuadros').textContent = (eecc.cuadrosNotas || []).length;
+      let cuadrosHtml = '';
+      (eecc.cuadrosNotas || []).forEach(cn => {
+        const isPasivo = cn.tipo === 'PASIVO_5COL';
+        cuadrosHtml += `
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-black pb-1.5">
+              <h4 class="text-xs font-black uppercase text-[#0D1F3C]">${cn.titulo}</h4>
+              <span class="text-[10px] px-2 py-0.5 rounded font-bold ${isPasivo ? 'bg-purple-100 text-purple-900' : 'bg-blue-100 text-blue-900'}">${cn.codigo} • ${isPasivo ? 'Pasivo 5 Col' : 'Activo 3 Col'}</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs border-collapse border border-black">
+                <thead class="bg-slate-200 font-bold text-black">
+                  <tr>
+                    <th class="p-1.5 border border-black text-left">DETALLE / CONCEPTO</th>
+                    ${isPasivo ? `
+                      <th class="p-1.5 border border-black text-right w-24">Corr. ${car.fechaCierre}</th>
+                      <th class="p-1.5 border border-black text-right w-24">No Corr. ${car.fechaCierre}</th>
+                      <th class="p-1.5 border border-black text-right w-24">Corr. ${car.fechaComparativo}</th>
+                      <th class="p-1.5 border border-black text-right w-24">No Corr. ${car.fechaComparativo}</th>
+                    ` : `
+                      <th class="p-1.5 border border-black text-right w-32">${car.fechaCierre} ($)</th>
+                      <th class="p-1.5 border border-black text-right w-32">${car.fechaComparativo} ($)</th>
+                    `}
+                  </tr>
+                </thead>
+                <tbody>
+        `;
+        (cn.filas || []).forEach(f => {
+          cuadrosHtml += `
+            <tr class="hover:bg-slate-50">
+              <td class="p-1.5 border border-slate-300">${f.detalle}</td>
+              ${isPasivo ? `
+                <td class="p-1.5 border border-slate-300 text-right">${fmtMpNum(f.corrActual)}</td>
+                <td class="p-1.5 border border-slate-300 text-right">${fmtMpNum(f.noCorrActual)}</td>
+                <td class="p-1.5 border border-slate-300 text-right">${fmtMpNum(f.corrAnterior)}</td>
+                <td class="p-1.5 border border-slate-300 text-right">${fmtMpNum(f.noCorrAnterior)}</td>
+              ` : `
+                <td class="p-1.5 border border-slate-300 text-right">${fmtMpNum(f.actual)}</td>
+                <td class="p-1.5 border border-slate-300 text-right">${fmtMpNum(f.anterior)}</td>
+              `}
+            </tr>
+          `;
+        });
+        if (cn.totales) {
+          const t = cn.totales;
+          cuadrosHtml += `
+            <tr class="bg-slate-100 font-black border-t-2 border-black">
+              <td class="p-1.5 border border-black">TOTALES</td>
+              ${isPasivo ? `
+                <td class="p-1.5 border border-black text-right">$ ${fmtMpNum(t.corrActual)}</td>
+                <td class="p-1.5 border border-black text-right">$ ${fmtMpNum(t.noCorrActual)}</td>
+                <td class="p-1.5 border border-black text-right">$ ${fmtMpNum(t.corrAnterior)}</td>
+                <td class="p-1.5 border border-black text-right">$ ${fmtMpNum(t.noCorrAnterior)}</td>
+              ` : `
+                <td class="p-1.5 border border-black text-right">$ ${fmtMpNum(t.actual)}</td>
+                <td class="p-1.5 border border-black text-right">$ ${fmtMpNum(t.anterior)}</td>
+              `}
+            </tr>
+          `;
+        }
+        cuadrosHtml += `</tbody></table></div></div>`;
+      });
+      document.getElementById('mp-cuadros-container').innerHTML = cuadrosHtml;
+
+      // 6. ANEXOS A a E (5 Annexes)
+      document.getElementById('mp-badge-cnt-anexos').textContent = (eecc.anexos || []).length;
+      let anexosHtml = '';
+      (eecc.anexos || []).forEach(anx => {
+        anexosHtml += `
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+            ${makeMpCabeceraHtml(car, anx.titulo, anx.subtitulo)}
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs border-collapse border border-black">
+                <thead class="bg-slate-200 font-bold text-black">
+                  <tr>
+                    ${anx.headers.map((h, i) => `<th class="p-1.5 border border-black ${i === 0 ? 'text-left' : 'text-right'}">${h}</th>`).join('')}
+                  </tr>
+                </thead>
+                <tbody>
+        `;
+        (anx.rows || []).forEach(r => {
+          const isTot = r[0] && (r[0].toUpperCase().includes('TOTAL') || r[0].startsWith('I.') || r[0].startsWith('II.'));
+          const bg = isTot ? 'bg-slate-100 font-black' : '';
+          anexosHtml += `
+            <tr class="${bg} hover:bg-slate-50">
+              ${r.map((c, i) => `<td class="p-1.5 border border-slate-300 ${i === 0 ? 'text-left' : 'text-right'} ${bg}">${c}</td>`).join('')}
+            </tr>
+          `;
+        });
+        anexosHtml += `</tbody></table></div>${makeMpDobleFirmaHtml(car)}</div>`;
+      });
+      document.getElementById('mp-anexos-container').innerHTML = anexosHtml;
+
+      // 7. NOTAS TEXTUALES RT 54
+      document.getElementById('modal-notas-preview').innerHTML = (rem.notas_preview || []).map(n => `
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+          <div class="font-extrabold text-sm text-[#0D1F3C] border-b border-slate-200 pb-1">${n.titulo}</div>
+          ${(n.parrafos || []).map(p => `<p class="leading-relaxed text-slate-700">${p}</p>`).join('')}
+        </div>
+      `).join('');
+
+      // 8. INFORME AUDITOR RT 37
+      document.getElementById('modal-auditor-preview').innerHTML = (rem.informe_auditor_preview || []).map(sec => `
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div class="font-bold text-xs text-[#0D1F3C] mb-1.5 uppercase tracking-wide">${sec.section}</div>
+          <p class="whitespace-pre-line leading-relaxed text-slate-700">${sec.text}</p>
+        </div>
+      `).join('');
+
+      // 9. RESUMEN MEJORAS
       document.getElementById('modal-applied-changes').innerHTML = (rem.applied_changes || []).map(c => `
-        <div class="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200 flex items-start gap-2.5">
-          <span class="text-emerald-700 font-black mt-0.5">✓</span>
+        <div class="p-3.5 rounded-lg bg-emerald-50/70 border border-emerald-200 flex items-start gap-2.5">
+          <span class="text-emerald-700 font-black text-sm">✓</span>
           <div>
-            <div class="font-bold text-emerald-950">${c.category}</div>
-            <div class="text-slate-700 mt-0.5">${c.action}</div>
+            <div class="font-extrabold text-emerald-950">${c.category}</div>
+            <div class="text-slate-700 mt-0.5 leading-relaxed">${c.action}</div>
           </div>
         </div>
       `).join('');
 
-      document.getElementById('modal-notas-preview').innerHTML = (rem.notas_preview || []).map(n => `
-        <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
-          <div class="font-bold text-[#0D1F3C]">${n.titulo}</div>
-          ${(n.parrafos || []).map(p => `<p class="leading-relaxed">${p}</p>`).join('')}
-        </div>
-      `).join('');
+      // 10. VISTA A4 COMPLETA (PRINT VIEW)
+      const a4Cont = document.getElementById('mp-a4all-container');
+      a4Cont.innerHTML = `
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-esp').innerHTML}</div>
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-eerr').innerHTML}</div>
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-eepn').innerHTML}</div>
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-efe').innerHTML}</div>
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${cuadrosHtml}</div>
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${anexosHtml}</div>
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-notas').innerHTML}</div>
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-auditor').innerHTML}</div>
+      `;
+    }
 
-      document.getElementById('modal-auditor-preview').innerHTML = (rem.informe_auditor_preview || []).map(sec => `
-        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
-          <div class="font-bold text-[#0D1F3C] mb-1">${sec.section}</div>
-          <p class="whitespace-pre-line leading-relaxed">${sec.text}</p>
-        </div>
-      `).join('');
+    // Export to Word .doc (Exact MICPROJECT SectionLandscape & SectionPortrait multi-page layout)
+    function exportMpWordDoc() {
+      if (!window.lastValidationData || !window.lastValidationData.remediation_info) {
+        alert('No hay balance cargado');
+        return;
+      }
+      const car = window.lastValidationData.remediation_info.eecc_structured.caratulaData;
+      const htmlContent = `
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head>
+          <meta charset='utf-8'>
+          <title>${car.razonSocial} - EECC</title>
+          <style>
+            @page SectionPortrait { size: 210mm 297mm; margin: 15mm 15mm 20mm 15mm; mso-header-margin: 10mm; mso-footer-margin: 10mm; }
+            @page SectionLandscape { size: 297mm 210mm; margin: 15mm 15mm 20mm 15mm; mso-page-orientation: landscape; }
+            div.SectionPortrait { page: SectionPortrait; }
+            div.SectionLandscape { page: SectionLandscape; }
+            body { font-family: 'Arial', sans-serif; font-size: 8.5pt; color: #000; }
+            table { border-collapse: collapse; width: 100%; margin-bottom: 12pt; font-size: 8pt; }
+            th, td { border: 0.5pt solid #000; padding: 3pt 4pt; }
+            th { background-color: #E5E7EB; font-weight: bold; }
+            .cabecera { border-bottom: 1.5pt solid #000; padding-bottom: 4pt; margin-bottom: 8pt; }
+            .firma { margin-top: 18pt; border-top: 0.5pt solid #888; padding-top: 8pt; font-size: 7.5pt; text-align: center; }
+          </style>
+        </head>
+        <body>
+          <div class='SectionLandscape'>
+            ${document.getElementById('panel-mp-esp').innerHTML}
+            <br clear='all' style='page-break-before:always' />
+            ${document.getElementById('panel-mp-eerr').innerHTML}
+            <br clear='all' style='page-break-before:always' />
+            ${document.getElementById('panel-mp-eepn').innerHTML}
+            <br clear='all' style='page-break-before:always' />
+            ${document.getElementById('panel-mp-efe').innerHTML}
+            <br clear='all' style='page-break-before:always' />
+            ${document.getElementById('mp-cuadros-container').innerHTML}
+            <br clear='all' style='page-break-before:always' />
+            ${document.getElementById('mp-anexos-container').innerHTML}
+          </div>
+          <div class='SectionPortrait'>
+            <br clear='all' style='page-break-before:always' />
+            ${document.getElementById('panel-mp-notas').innerHTML}
+            <br clear='all' style='page-break-before:always' />
+            ${document.getElementById('panel-mp-auditor').innerHTML}
+          </div>
+        </body>
+        </html>
+      `;
+      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `EECC_Homologados_MICPROJECT_${car.razonSocial.substring(0, 20)}.doc`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Export to Excel .xls (HTML-based Multi-Table Excel Workbook)
+    function exportMpExcel() {
+      if (!window.lastValidationData || !window.lastValidationData.remediation_info) {
+        alert('No hay balance cargado');
+        return;
+      }
+      const car = window.lastValidationData.remediation_info.eecc_structured.caratulaData;
+      const htmlContent = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta charset="utf-8">
+          <style>
+            table { border-collapse: collapse; font-family: Arial; font-size: 9pt; }
+            th { background-color: #0D1F3C; color: #FFFFFF; font-weight: bold; border: 0.5pt solid #000; }
+            td { border: 0.5pt solid #CCC; }
+            .num { mso-number-format:"\#\,\#\#0\.00"; text-align: right; }
+          </style>
+        </head>
+        <body>
+          <h2>${car.razonSocial} — ESTADO DE SITUACIÓN PATRIMONIAL</h2>
+          ${document.getElementById('mp-esp-table').outerHTML}
+          <br><br>
+          <h2>ESTADO DE RECURSOS Y GASTOS / RESULTADOS</h2>
+          ${document.getElementById('mp-eerr-table').outerHTML}
+          <br><br>
+          <h2>ESTADO DE EVOLUCIÓN DEL PATRIMONIO NETO</h2>
+          ${document.getElementById('mp-eepn-table').outerHTML}
+          <br><br>
+          <h2>ESTADO DE FLUJOS DE EFECTIVO</h2>
+          ${document.getElementById('mp-efe-table').outerHTML}
+          <br><br>
+          <h2>CUADROS DE NOTAS DE COMPOSICIÓN DE ACTIVO Y PASIVO</h2>
+          ${document.getElementById('mp-cuadros-container').innerHTML}
+          <br><br>
+          <h2>ANEXOS CONTABLES</h2>
+          ${document.getElementById('mp-anexos-container').innerHTML}
+        </body>
+        </html>
+      `;
+      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `EECC_Homologados_MICPROJECT_${car.razonSocial.substring(0, 20)}.xls`;
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
     function filterChecks(statusFilter) {

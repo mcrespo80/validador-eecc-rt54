@@ -185,12 +185,12 @@ class EECCValidator:
 
         # 2. Entity Name
         entity_name = None
-        for item in lines[:45]:
+        for item in lines[:60]:
             txt = item["text"].strip()
-            # Look for "Denominación de la entidad:" or header before ESTADOS CONTABLES
-            m_den = re.search(r"(?:Denominaci[oó]n(?:\s+social)?(?:\s+de\s+la\s+entidad)?|Raz[oó]n\s+Social)\s*:\s*(.+)", txt, re.IGNORECASE)
+            # Look for "Denominación de la entidad:", "Razón Social:", or "AGENTE DEL SEGURO SALUD:"
+            m_den = re.search(r"(?:Denominaci[oó]n(?:\s+social)?(?:\s+de\s+la\s+entidad)?|Raz[oó]n\s+Social|AGENTE\s+DEL\s+SEGURO\s+(?:DE\s+)?SALUD)\s*:\s*(.+)", txt, re.IGNORECASE)
             if m_den:
-                cand = m_den.group(1).strip(" .|-")
+                cand = m_den.group(1).split("|")[0].strip(" .|-")
                 if len(cand) > 2 and "DENOMINACIÓN" not in cand.upper():
                     entity_name = cand
                     break
@@ -1355,7 +1355,8 @@ class EECCValidator:
                     is_header_or_total = any(w in label_clean.upper() for w in [
                         "TOTAL", "SUBTOTAL", "ACTIVO", "PASIVO", "PATRIMONIO NETO", "ESTADO DE",
                         "HOJA", "EJERCICIO", "PESOS", "DENOMINACIÓN", "DENOMINACION", "FECHA",
-                        "RUBROS", "CONCEPTO", "NOTAS", "ACLARACIÓN", "ACLARACION", "MODELO", "RECPAM"
+                        "RUBROS", "CONCEPTO", "NOTAS", "ACLARACIÓN", "ACLARACION", "MODELO", "RECPAM",
+                        "RECURSOS", "GASTOS ORDINARIOS", "RESULTADOS ORDINARIOS", "INGRESOS", "ANEXO"
                     ])
                     if 4 <= len(label_clean) <= 75 and not is_header_or_total and re.search(r"[A-Za-zÁÉÍÓÚáéíóú]{4,}", label_clean):
                         if len(nums) >= 2 and all(abs(x) < 0.005 for x in nums[:2]):
@@ -1410,6 +1411,9 @@ class EECCValidator:
                     if len(nums) >= 4:
                         assign_pair("activo_no_corriente", nums[:2])
                         assign_pair("patrimonio_neto_esp", nums[2:4])
+                    elif len(nums) == 3:
+                        assign_pair("activo_no_corriente", nums[:2])
+                        assign_pair("patrimonio_neto_esp", [nums[2]])
                     elif len(nums) >= 2:
                         assign_pair("activo_no_corriente", nums[:2])
                 elif re.search(r"Total\s+del\s+activo\s+no\s+corriente", txt, re.IGNORECASE):
