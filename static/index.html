@@ -505,7 +505,7 @@
             <h4 class="text-xs font-black uppercase text-slate-500 tracking-wider">
               Vista Preliminar de Hoja de Memoria con Cabecera y Firmas
             </h4>
-            <div id="mp-memoria-preview" class="border border-black p-6 rounded-lg bg-white space-y-4"></div>
+            <div id="mp-memoria-preview" class="max-w-4xl mx-auto border border-black p-8 sm:p-12 rounded-lg bg-white space-y-4 shadow-sm"></div>
           </div>
         </div>
 
@@ -558,7 +558,7 @@
 
         <!-- 7. TAB PANEL: NOTAS TEXTUALES RT 54 (UBICADAS ANTES DE LOS CUADROS) -->
         <div id="panel-mp-notas" class="hidden space-y-4">
-          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-slate-300 shadow-sm space-y-6">
             <div id="mp-notas-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
             <h4 class="text-sm font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-200 pb-2 mb-4">
               Anexo Textual de Notas a los Estados Contables (RT 54 - T.O. RT 59)
@@ -603,13 +603,13 @@
             <h4 class="text-xs font-black uppercase text-slate-500 tracking-wider">
               Vista Preliminar de Hoja de Comisión Revisora con Cabecera y Firmas
             </h4>
-            <div id="mp-revisores-preview" class="border border-black p-6 rounded-lg bg-white space-y-4"></div>
+            <div id="mp-revisores-preview" class="max-w-4xl mx-auto border border-black p-8 sm:p-12 rounded-lg bg-white space-y-4 shadow-sm"></div>
           </div>
         </div>
 
         <!-- 11. TAB PANEL: INFORME DEL AUDITOR RT 37 -->
         <div id="panel-mp-auditor" class="hidden space-y-4">
-          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-slate-300 shadow-sm space-y-6">
             <div id="mp-auditor-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
             <h4 class="text-sm font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-200 pb-2 mb-4">
               Informe de Auditoría Emitido por el Auditor Independiente (RT 37 mod. RT 53)
@@ -621,7 +621,7 @@
 
         <!-- 12. TAB PANEL: RESUMEN MEJORAS -->
         <div id="panel-mp-cambios" class="hidden space-y-4">
-          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl border border-slate-300 shadow-sm">
             <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
               Adecuaciones Normativas y Correcciones Aplicadas Automáticamente
             </h4>
@@ -1414,64 +1414,119 @@
       });
       document.getElementById('mp-anexos-container').innerHTML = anexosHtml;
 
-      // 9. COMISIÓN REVISORA PREVIEW (UBICADA ANTES DEL AUDITOR)
+      // 9. COMISIÓN REVISORA PREVIEW (UBICADA ANTES DEL AUDITOR) - Formato Vertical y Márgenes Amplios
       const revPreview = document.getElementById('mp-revisores-preview');
       if (revPreview) {
         const revPars = (eecc.informeRevisoresTexto || '').split('\n\n').filter(p => p.trim());
         revPreview.innerHTML = `
           ${makeMpCabeceraHtml(car, 'INFORME DE LA COMISIÓN REVISORA DE CUENTAS / COMISIÓN FISCALIZADORA', `Al Señor Presidente y Miembros de la Comisión Directiva de ${car.razonSocial}`)}
-          <div class="space-y-3 text-xs text-slate-800 leading-relaxed my-4 text-justify">
+          <div class="space-y-4 text-xs sm:text-[13px] text-slate-800 leading-relaxed my-5 text-justify px-4 sm:px-10">
             ${revPars.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')}
           </div>
           ${makeMpRevisoresFirmaHtml(car)}
         `;
       }
 
-      // 10. INFORME AUDITOR RT 37
+      // 10. INFORME AUDITOR RT 37 - Formato Vertical y Márgenes Amplios
       const audCab = document.getElementById('mp-auditor-cabecera');
-      if (audCab) audCab.innerHTML = makeMpCabeceraHtml(car, 'INFORME DEL AUDITOR INDEPENDIENTE (RT 37 MOD. RT 53)', `Al Señor Presidente y Miembros de la Comisión Directiva de ${car.razonSocial}`);
+      if (audCab) audCab.innerHTML = makeMpCabeceraHtml(car, 'INFORME DE AUDITORÍA EMITIDO POR EL AUDITOR INDEPENDIENTE', `Al Señor Presidente y Miembros de la Comisión Directiva de ${car.razonSocial}`);
       const audFir = document.getElementById('mp-auditor-firma');
       if (audFir) {
         audFir.innerHTML = `
-          <div class="flex flex-col items-center mt-6 text-xs">
+          <div class="flex flex-col items-center mt-8 text-xs">
             <span class="text-[11px] italic text-slate-700 mb-6">Ciudad Autónoma de Buenos Aires, ${car.fechaCertificacion}.-</span>
-            <div class="w-56 border-t border-dashed border-black pt-1 font-bold text-slate-900 text-center">${car.auditorNombre}</div>
-            <div class="text-[11px] text-slate-600 text-center">Contador Público — ${car.auditorMatricula}</div>
+            <div class="w-64 border-t border-dashed border-black pt-1 font-bold text-slate-900 text-center">${car.auditorNombre}</div>
+            <div class="text-[11px] text-slate-700 text-center font-medium">Contador Público — ${car.auditorMatricula}</div>
+            <div class="text-[10px] text-slate-500 text-center">Socio / Auditor Independiente</div>
           </div>
         `;
       }
-      document.getElementById('modal-auditor-preview').innerHTML = (rem.informe_auditor_preview || []).map(sec => `
-        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
-          <div class="font-bold text-xs text-[#0D1F3C] mb-1.5 uppercase tracking-wide">${sec.section}</div>
-          <p class="whitespace-pre-line leading-relaxed text-slate-700">${sec.text}</p>
-        </div>
-      `).join('');
+      document.getElementById('modal-auditor-preview').innerHTML = (rem.informe_auditor_preview || []).map(sec => {
+        if (sec.section === 'TÍTULO OFICIAL') {
+          return `<div class="text-center font-black text-sm uppercase tracking-wider text-[#0D1F3C] my-2">${sec.text}</div>`;
+        }
+        if (sec.section === 'APARTADO I' || sec.section === 'APARTADO II') {
+          return `<div class="text-center font-black text-xs uppercase tracking-wide text-[#0D1F3C] underline my-3">${sec.text}</div>`;
+        }
+        if (sec.section === 'DESTINATARIO') {
+          return `<div class="font-bold text-xs text-slate-900 my-2 px-2 sm:px-4">${sec.text.replace(/\n/g, '<br>')}</div>`;
+        }
+        if (sec.section === 'LUGAR Y FECHA DE EMISIÓN') {
+          return '';
+        }
+        return `
+          <div class="space-y-1.5 my-3 px-2 sm:px-4">
+            <div class="font-bold text-xs text-[#0D1F3C] uppercase tracking-wide border-b border-slate-200 pb-0.5">${sec.section}</div>
+            <div class="space-y-2 text-justify leading-relaxed text-slate-800 text-xs sm:text-[13px]">
+              ${sec.text.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
 
-      // 11. RESUMEN MEJORAS
-      document.getElementById('modal-applied-changes').innerHTML = (rem.applied_changes || []).map(c => `
-        <div class="p-3.5 rounded-lg bg-emerald-50/70 border border-emerald-200 flex items-start gap-2.5">
-          <span class="text-emerald-700 font-black text-sm">✓</span>
-          <div>
-            <div class="font-extrabold text-emerald-950">${c.category}</div>
-            <div class="text-slate-700 mt-0.5 leading-relaxed">${c.action}</div>
+      // 11. RESUMEN MEJORAS (TABLA COMPARATIVA: OBSERVACIONES DETECTADAS VS. MEDIDAS CORRECTIVAS APLICADAS)
+      const cambiosList = rem.applied_changes || [];
+      document.getElementById('modal-applied-changes').innerHTML = `
+        <div class="mp-cambios-table-container space-y-4">
+          ${makeMpCabeceraHtml(car, 'RESUMEN DE ADECUACIONES NORMATIVAS Y MEDIDAS CORRECTIVAS APLICADAS', 'Diagnóstico comparativo entre las observaciones del balance original y las soluciones técnicas aplicadas en la versión homologada.')}
+          <div class="text-xs text-slate-700 leading-relaxed mb-4 text-justify px-2">
+            A continuación se detallan los desvíos normativos identificados por el motor de validación en el balance original y la solución técnica implementada en este juego de estados contables para garantizar la homologación profesional (RT 54 / RT 37 / Res. CD 46/2021 CPCECABA):
+          </div>
+          <div class="overflow-x-auto rounded-lg border border-slate-300 shadow-xs">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="bg-[#0D1F3C] text-white">
+                  <th class="p-3 border border-slate-700 font-bold w-32 text-center uppercase tracking-wider text-[11px]">Código</th>
+                  <th class="p-3 border border-slate-700 font-bold w-1/3 uppercase tracking-wider text-[11px]">Observación en Balance Original</th>
+                  <th class="p-3 border border-slate-700 font-bold uppercase tracking-wider text-[11px]">Medida Correctiva Aplicada (Homologado)</th>
+                  <th class="p-3 border border-slate-700 font-bold w-28 text-center uppercase tracking-wider text-[11px]">Resultado</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 bg-white">
+                ${cambiosList.map((c, idx) => `
+                  <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'} hover:bg-amber-50/50 transition">
+                    <td class="p-3 border-r border-slate-200 text-center align-top">
+                      <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black ${c.category === 'NORMATIVA RT 54' ? 'bg-indigo-100 text-indigo-900' : c.category === 'ESTRUCTURA Y FORMATO' ? 'bg-blue-100 text-blue-900' : 'bg-amber-100 text-amber-900'} mb-1">${c.category}</span>
+                      <div class="font-extrabold text-[#0D1F3C] text-xs">${c.code}</div>
+                      <div class="text-[10px] text-slate-500 font-semibold mt-0.5">${c.title}</div>
+                    </td>
+                    <td class="p-3 border-r border-slate-200 text-slate-800 align-top leading-relaxed text-justify">
+                      ${c.observation}
+                    </td>
+                    <td class="p-3 border-r border-slate-200 text-slate-900 align-top leading-relaxed text-justify font-medium">
+                      ${c.action}
+                    </td>
+                    <td class="p-3 text-center align-top">
+                      <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-xs">
+                        ✓ ${c.status_remediado || 'SUBSANADO'}
+                      </span>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-6 pt-3 border-t border-slate-200">
+            ${makeMpDobleFirmaHtml(car)}
           </div>
         </div>
-      `).join('');
+      `;
 
-      // 12. VISTA A4 COMPLETA (PRINT VIEW EN ORDEN ESTRICTO)
+      // 12. VISTA A4 COMPLETA (PRINT VIEW EN ORDEN ESTRICTO: HOJAS VERTICALES CON MÁRGENES Y HORIZONTALES)
       const a4Cont = document.getElementById('mp-a4all-container');
       a4Cont.innerHTML = `
-        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-caratula').querySelector('#mp-caratula-preview').outerHTML}</div>
-        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-memoria').querySelector('#mp-memoria-preview').outerHTML}</div>
+        <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-caratula').querySelector('#mp-caratula-preview').outerHTML}</div>
+        <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('modal-applied-changes').innerHTML}</div>
+        <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-memoria').querySelector('#mp-memoria-preview').outerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-esp').innerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-eerr').innerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-eepn').innerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-efe').innerHTML}</div>
-        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-notas').innerHTML}</div>
+        <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-notas').innerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${cuadrosHtml}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${anexosHtml}</div>
-        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-revisores').querySelector('#mp-revisores-preview').outerHTML}</div>
-        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-auditor').innerHTML}</div>
+        <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-revisores').querySelector('#mp-revisores-preview').outerHTML}</div>
+        <div class="max-w-4xl mx-auto bg-white p-8 sm:p-12 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-auditor').innerHTML}</div>
       `;
     }
 
@@ -1574,8 +1629,8 @@
           <meta charset='utf-8'>
           <title>${car.razonSocial} - EECC</title>
           <style>
-            @page SectionPortrait { size: 210mm 297mm; margin: 15mm 15mm 20mm 15mm; mso-header-margin: 10mm; mso-footer-margin: 10mm; }
-            @page SectionLandscape { size: 297mm 210mm; margin: 15mm 15mm 20mm 15mm; mso-page-orientation: landscape; }
+            @page SectionPortrait { size: 210mm 297mm; margin: 20mm 30mm 20mm 30mm; mso-header-margin: 10mm; mso-footer-margin: 10mm; }
+            @page SectionLandscape { size: 297mm 210mm; margin: 15mm 15mm 15mm 15mm; mso-page-orientation: landscape; }
             div.SectionPortrait { page: SectionPortrait; }
             div.SectionLandscape { page: SectionLandscape; }
             body { font-family: 'Arial', sans-serif; font-size: 8.5pt; color: #000; }
@@ -1589,6 +1644,8 @@
         <body>
           <div class='SectionPortrait'>
             ${document.getElementById('mp-caratula-preview').innerHTML}
+            <br clear='all' style='page-break-before:always' />
+            ${document.getElementById('modal-applied-changes').innerHTML}
             <br clear='all' style='page-break-before:always' />
             ${document.getElementById('mp-memoria-preview').innerHTML}
           </div>
