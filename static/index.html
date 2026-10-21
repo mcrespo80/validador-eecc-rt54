@@ -337,7 +337,13 @@
 
       <!-- Multi-Tab Navigation Bar -->
       <div class="bg-white border-b border-slate-200 px-6 pt-2 flex flex-wrap gap-1.5 shrink-0 overflow-x-auto" id="mp-tabs-bar">
-        <button onclick="switchMpTab('esp')" id="tab-mp-btn-esp" class="px-3.5 py-2 rounded-t-lg text-xs font-extrabold border-b-2 border-[#0D1F3C] text-[#0D1F3C] bg-slate-50 transition">
+        <button onclick="switchMpTab('caratula')" id="tab-mp-btn-caratula" class="px-3.5 py-2 rounded-t-lg text-xs font-extrabold border-b-2 border-[#0D1F3C] text-[#0D1F3C] bg-slate-50 transition">
+          📜 Carátula & Firmantes
+        </button>
+        <button onclick="switchMpTab('memoria')" id="tab-mp-btn-memoria" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          📖 Memoria
+        </button>
+        <button onclick="switchMpTab('esp')" id="tab-mp-btn-esp" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
           🏛️ Situación Patrimonial (ESP)
         </button>
         <button onclick="switchMpTab('eerr')" id="tab-mp-btn-eerr" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
@@ -349,14 +355,17 @@
         <button onclick="switchMpTab('efe')" id="tab-mp-btn-efe" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
           💧 Flujo de Efectivo (EFE)
         </button>
+        <button onclick="switchMpTab('notas')" id="tab-mp-btn-notas" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          📝 Notas Textuales RT 54
+        </button>
         <button onclick="switchMpTab('cuadros')" id="tab-mp-btn-cuadros" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
           📑 Cuadros Notas Activo/Pasivo (<span id="mp-badge-cnt-cuadros">0</span>)
         </button>
         <button onclick="switchMpTab('anexos')" id="tab-mp-btn-anexos" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
           📁 Anexos A a E (<span id="mp-badge-cnt-anexos">0</span>)
         </button>
-        <button onclick="switchMpTab('notas')" id="tab-mp-btn-notas" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
-          📝 Notas Textuales RT 54
+        <button onclick="switchMpTab('revisores')" id="tab-mp-btn-revisores" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
+          🔍 Comisión Revisora de Cuentas
         </button>
         <button onclick="switchMpTab('auditor')" id="tab-mp-btn-auditor" class="px-3.5 py-2 rounded-t-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition">
           📋 Informe Auditor RT 37
@@ -371,8 +380,137 @@
 
       <!-- Modal Body (Tab Panels) -->
       <div class="p-6 overflow-y-auto space-y-6 flex-1 bg-slate-50" id="mp-modal-body">
-        <!-- TAB PANEL: ESP (Side-by-side 2 tables) -->
-        <div id="panel-mp-esp" class="space-y-4">
+        <!-- 1. TAB PANEL: CARÁTULA & FIRMANTES INTERACTIVA -->
+        <div id="panel-mp-caratula" class="space-y-6">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+              <div>
+                <h4 class="text-sm font-extrabold uppercase tracking-wide text-[#0D1F3C]">
+                  Configuración de Carátula Institucional y Datos de Firmantes
+                </h4>
+                <p class="text-xs text-slate-500">
+                  Modifique el CUIT, Razón Social, Presidente y Auditor. Al guardar, se <strong>replicarán automáticamente en las cabeceras y firmas de todas las páginas</strong> y se regenerarán los archivos PDF y Word descargables.
+                </p>
+              </div>
+              <button onclick="applyCaratulaFirmantesUpdates()" id="btn-apply-caratula" class="px-4 py-2.5 rounded-lg bg-[#C59B27] hover:bg-[#b08920] text-slate-950 text-xs font-black shadow flex items-center gap-1.5 transition shrink-0 cursor-pointer">
+                💾 Guardar Cambios y Replicar en Todo el Balance
+              </button>
+            </div>
+
+            <div id="mp-save-status" class="hidden p-3 rounded-lg text-xs font-bold"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <!-- Entidad -->
+              <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div class="font-extrabold text-[#0D1F3C] border-b pb-1 text-xs uppercase flex items-center gap-1.5">
+                  <span>🏢</span> 1. Datos de la Entidad
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">C.U.I.T. (Replicado en cada hoja):</label>
+                  <input type="text" id="mp-input-cuit" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white font-mono font-bold text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none" placeholder="30-xxxxxxxx-x">
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Razón Social / Denominación:</label>
+                  <input type="text" id="mp-input-razon" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white font-bold text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none">
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">N° Inscripción / RNOS:</label>
+                  <input type="text" id="mp-input-rnos" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none">
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Domicilio Legal / Sede Social:</label>
+                  <input type="text" id="mp-input-sede" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none">
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Tipo de Ente (RT 54):</label>
+                  <input type="text" id="mp-input-tipo-entidad" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none">
+                </div>
+              </div>
+
+              <!-- Fechas -->
+              <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div class="font-extrabold text-[#0D1F3C] border-b pb-1 text-xs uppercase flex items-center gap-1.5">
+                  <span>📅</span> 2. Ejercicio y Fechas
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Fecha Cierre Ejercicio:</label>
+                  <input type="text" id="mp-input-fecha-cierre" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white font-semibold text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none" placeholder="31 de Diciembre de 2023">
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Fecha Cierre Anterior (Comparativo):</label>
+                  <input type="text" id="mp-input-fecha-comp" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white font-semibold text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none" placeholder="31 de Diciembre de 2022">
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Fecha de Certificación / Informe:</label>
+                  <input type="text" id="mp-input-fecha-cert" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none" placeholder="16 de Mayo de 2024">
+                </div>
+              </div>
+
+              <!-- Firmantes -->
+              <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div class="font-extrabold text-[#0D1F3C] border-b pb-1 text-xs uppercase flex items-center gap-1.5">
+                  <span>✍️</span> 3. Firmantes en Doble Firma
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Presidente / Representante Legal:</label>
+                  <input type="text" id="mp-input-firmante" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white font-bold text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none">
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Cargo Institucional:</label>
+                  <input type="text" id="mp-input-cargo" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none" placeholder="Presidente">
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Contador Dictaminante / Auditor:</label>
+                  <input type="text" id="mp-input-auditor" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white font-bold text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none">
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Matrícula Profesional / Consejo:</label>
+                  <input type="text" id="mp-input-matricula" class="w-full px-3 py-2 rounded-lg border border-slate-300 bg-white font-mono text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none" placeholder="C.P.C.E.C.A.B.A. T° ... F° ...">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Carátula A4 Preview -->
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+            <h4 class="text-xs font-black uppercase text-slate-500 tracking-wider">
+              Vista Preliminar de Carátula Institucional (Página 1 del PDF Oficial)
+            </h4>
+            <div id="mp-caratula-preview" class="border border-black p-6 rounded-lg bg-white space-y-4"></div>
+          </div>
+        </div>
+
+        <!-- 2. TAB PANEL: MEMORIA -->
+        <div id="panel-mp-memoria" class="hidden space-y-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+              <div>
+                <h4 class="text-sm font-extrabold uppercase tracking-wide text-[#0D1F3C]">
+                  Memoria del Órgano de Administración / Comisión Directiva
+                </h4>
+                <p class="text-xs text-slate-500">
+                  Redacte o ajuste el texto de la Memoria (art. 66 Ley 19.550 y normas específicas). Se ubica inmediatamente después de la Carátula.
+                </p>
+              </div>
+              <button onclick="applyCaratulaFirmantesUpdates()" id="btn-apply-memoria" class="px-4 py-2 rounded-lg bg-[#C59B27] hover:bg-[#b08920] text-slate-950 text-xs font-black shadow flex items-center gap-1.5 transition shrink-0 cursor-pointer">
+                💾 Guardar Memoria y Regenerar Archivos
+              </button>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 text-xs mb-1.5">Texto de la Memoria (párrafos separados por doble enter):</label>
+              <textarea id="mp-textarea-memoria" rows="12" class="w-full text-xs p-3.5 border border-slate-300 rounded-lg font-sans leading-relaxed text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none bg-slate-50/50" placeholder="Escriba aquí la Memoria del ejercicio..."></textarea>
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+            <h4 class="text-xs font-black uppercase text-slate-500 tracking-wider">
+              Vista Preliminar de Hoja de Memoria con Cabecera y Firmas
+            </h4>
+            <div id="mp-memoria-preview" class="border border-black p-6 rounded-lg bg-white space-y-4"></div>
+          </div>
+        </div>
+
+        <!-- 3. TAB PANEL: ESP (Side-by-side 2 tables) -->
+        <div id="panel-mp-esp" class="hidden space-y-4">
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
             <div id="mp-esp-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
             <div class="overflow-x-auto">
@@ -382,7 +520,7 @@
           </div>
         </div>
 
-        <!-- TAB PANEL: EERR -->
+        <!-- 4. TAB PANEL: EERR -->
         <div id="panel-mp-eerr" class="hidden space-y-4">
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
             <div id="mp-eerr-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
@@ -393,7 +531,7 @@
           </div>
         </div>
 
-        <!-- TAB PANEL: EEPN -->
+        <!-- 5. TAB PANEL: EEPN -->
         <div id="panel-mp-eepn" class="hidden space-y-4">
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
             <div id="mp-eepn-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
@@ -404,7 +542,7 @@
           </div>
         </div>
 
-        <!-- TAB PANEL: EFE -->
+        <!-- 6. TAB PANEL: EFE -->
         <div id="panel-mp-efe" class="hidden space-y-4">
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
             <div id="mp-efe-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
@@ -418,37 +556,70 @@
           </div>
         </div>
 
-        <!-- TAB PANEL: CUADROS DE NOTAS ACTIVO Y PASIVO -->
-        <div id="panel-mp-cuadros" class="hidden space-y-6">
-          <div id="mp-cuadros-container" class="space-y-6"></div>
-        </div>
-
-        <!-- TAB PANEL: ANEXOS A a E -->
-        <div id="panel-mp-anexos" class="hidden space-y-6">
-          <div id="mp-anexos-container" class="space-y-6"></div>
-        </div>
-
-        <!-- TAB PANEL: NOTAS TEXTUALES RT 54 -->
+        <!-- 7. TAB PANEL: NOTAS TEXTUALES RT 54 (UBICADAS ANTES DE LOS CUADROS) -->
         <div id="panel-mp-notas" class="hidden space-y-4">
           <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div id="mp-notas-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
             <h4 class="text-sm font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-200 pb-2 mb-4">
               Anexo Textual de Notas a los Estados Contables (RT 54 - T.O. RT 59)
             </h4>
             <div id="modal-notas-preview" class="space-y-5 text-xs text-slate-700"></div>
+            <div id="mp-notas-firma" class="mt-6 pt-4 border-t border-slate-300"></div>
           </div>
         </div>
 
-        <!-- TAB PANEL: INFORME DEL AUDITOR RT 37 -->
+        <!-- 8. TAB PANEL: CUADROS DE NOTAS ACTIVO Y PASIVO -->
+        <div id="panel-mp-cuadros" class="hidden space-y-6">
+          <div id="mp-cuadros-container" class="space-y-6"></div>
+        </div>
+
+        <!-- 9. TAB PANEL: ANEXOS A a E -->
+        <div id="panel-mp-anexos" class="hidden space-y-6">
+          <div id="mp-anexos-container" class="space-y-6"></div>
+        </div>
+
+        <!-- 10. TAB PANEL: COMISIÓN REVISORA DE CUENTAS (ANTES DEL AUDITOR) -->
+        <div id="panel-mp-revisores" class="hidden space-y-4">
+          <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+              <div>
+                <h4 class="text-sm font-extrabold uppercase tracking-wide text-[#0D1F3C]">
+                  Informe de la Comisión Revisora de Cuentas / Comisión Fiscalizadora
+                </h4>
+                <p class="text-xs text-slate-500">
+                  Escrito preceptivo del Órgano de Fiscalización Interna. Va ubicado antes del Informe del Auditor Independiente.
+                </p>
+              </div>
+              <button onclick="applyCaratulaFirmantesUpdates()" id="btn-apply-revisores" class="px-4 py-2 rounded-lg bg-[#C59B27] hover:bg-[#b08920] text-slate-950 text-xs font-black shadow flex items-center gap-1.5 transition shrink-0 cursor-pointer">
+                💾 Guardar Informe Revisores y Regenerar Archivos
+              </button>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-700 text-xs mb-1.5">Texto del Informe de Revisores (párrafos separados por doble enter):</label>
+              <textarea id="mp-textarea-revisores" rows="12" class="w-full text-xs p-3.5 border border-slate-300 rounded-lg font-sans leading-relaxed text-slate-900 focus:ring-2 focus:ring-[#C59B27] focus:outline-none bg-slate-50/50" placeholder="Escriba aquí el dictamen de los Revisores de Cuentas..."></textarea>
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+            <h4 class="text-xs font-black uppercase text-slate-500 tracking-wider">
+              Vista Preliminar de Hoja de Comisión Revisora con Cabecera y Firmas
+            </h4>
+            <div id="mp-revisores-preview" class="border border-black p-6 rounded-lg bg-white space-y-4"></div>
+          </div>
+        </div>
+
+        <!-- 11. TAB PANEL: INFORME DEL AUDITOR RT 37 -->
         <div id="panel-mp-auditor" class="hidden space-y-4">
           <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div id="mp-auditor-cabecera" class="text-center pb-3 border-b border-black mb-4"></div>
             <h4 class="text-sm font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-200 pb-2 mb-4">
               Informe de Auditoría Emitido por el Auditor Independiente (RT 37 mod. RT 53)
             </h4>
             <div id="modal-auditor-preview" class="space-y-4 text-xs text-slate-700"></div>
+            <div id="mp-auditor-firma" class="mt-6 pt-4 border-t border-slate-300"></div>
           </div>
         </div>
 
-        <!-- TAB PANEL: RESUMEN MEJORAS -->
+        <!-- 12. TAB PANEL: RESUMEN MEJORAS -->
         <div id="panel-mp-cambios" class="hidden space-y-4">
           <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
             <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
@@ -458,11 +629,11 @@
           </div>
         </div>
 
-        <!-- TAB PANEL: VISTA A4 COMPLETA -->
+        <!-- 13. TAB PANEL: VISTA A4 COMPLETA -->
         <div id="panel-mp-a4all" class="hidden space-y-8">
           <div class="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200">
             <div class="text-xs text-slate-600">
-              <strong>Vista Preliminar de Impresión:</strong> Cada estado y anexo está maquetado en su propia hoja A4 (Vertical u Horizontal) con CabeceraEECC y DobleFirmaEECC.
+              <strong>Vista Preliminar de Impresión:</strong> Cada estado y anexo está maquetado en su propia hoja A4 (Vertical u Horizontal) en el orden normativo estricto con CabeceraEECC y DobleFirmaEECC.
             </div>
             <button onclick="window.print()" class="px-4 py-2 rounded-lg bg-[#0D1F3C] hover:bg-[#1A365D] text-white text-xs font-bold shadow flex items-center gap-1.5 transition">
               🖨️ Imprimir Todo
@@ -791,16 +962,17 @@
 
     function openImprovedModal() {
       document.getElementById('improved-modal').classList.remove('hidden');
+      switchMpTab(activeMpTab || 'caratula');
     }
 
     function closeImprovedModal() {
       document.getElementById('improved-modal').classList.add('hidden');
     }
 
-    let activeMpTab = 'esp';
+    let activeMpTab = 'caratula';
     function switchMpTab(tabId) {
       activeMpTab = tabId;
-      const tabs = ['esp', 'eerr', 'eepn', 'efe', 'cuadros', 'anexos', 'notas', 'auditor', 'cambios', 'a4all'];
+      const tabs = ['caratula', 'memoria', 'esp', 'eerr', 'eepn', 'efe', 'notas', 'cuadros', 'anexos', 'revisores', 'auditor', 'cambios', 'a4all'];
       tabs.forEach(t => {
         const p = document.getElementById(`panel-mp-${t}`);
         const b = document.getElementById(`tab-mp-btn-${t}`);
@@ -860,7 +1032,34 @@
       `;
     }
 
-    function populateImprovedModal(data) {
+    function makeMpRevisoresFirmaHtml(car) {
+      return `
+        <div class="mt-8 pt-4 border-t border-slate-300">
+          <div class="text-center text-[11px] italic text-slate-600 mb-6">
+            Por la Comisión Revisora de Cuentas / Comisión Fiscalizadora
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center text-xs">
+            <div class="flex flex-col items-center">
+              <span class="text-[10px] italic text-transparent mb-6">.</span>
+              <div class="w-36 border-t border-dashed border-black pt-1 font-bold text-slate-900">Revisor/a de Cuentas</div>
+              <div class="text-[10px] text-slate-600">Comisión Revisora</div>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-[10px] italic text-transparent mb-6">.</span>
+              <div class="w-36 border-t border-dashed border-black pt-1 font-bold text-slate-900">Presidente / Coordinador</div>
+              <div class="text-[10px] text-slate-600">Comisión Revisora</div>
+            </div>
+            <div class="flex flex-col items-center">
+              <span class="text-[10px] italic text-transparent mb-6">.</span>
+              <div class="w-36 border-t border-dashed border-black pt-1 font-bold text-slate-900">Revisor/a de Cuentas</div>
+              <div class="text-[10px] text-slate-600">Comisión Revisora</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function populateImprovedModal(data, resetForm = true) {
       if (!data.remediation_info) return;
       const rem = data.remediation_info;
       const eecc = rem.eecc_structured;
@@ -871,7 +1070,70 @@
       document.getElementById('modal-dl-docx').href = data.improved_docx_url || '#';
       document.getElementById('modal-mp-title').textContent = `${car.razonSocial} — Cierre al ${car.fechaCierre}`;
 
-      // 1. ESP TABLE
+      // Reset / Fill form fields if first load or explicit reset
+      if (resetForm) {
+        const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+        setVal('mp-input-cuit', car.cuit);
+        setVal('mp-input-razon', car.razonSocial);
+        setVal('mp-input-rnos', car.rnos);
+        setVal('mp-input-sede', car.domicilioLegal || 'Ciudad Autónoma de Buenos Aires');
+        setVal('mp-input-tipo-entidad', car.tipoEntidad);
+        setVal('mp-input-fecha-cierre', car.fechaCierre);
+        setVal('mp-input-fecha-comp', car.fechaComparativo);
+        setVal('mp-input-fecha-cert', car.fechaCertificacion);
+        setVal('mp-input-firmante', car.firmanteNombre);
+        setVal('mp-input-cargo', car.firmanteCargo || 'Presidente');
+        setVal('mp-input-auditor', car.auditorNombre);
+        setVal('mp-input-matricula', car.auditorMatricula);
+        setVal('mp-textarea-memoria', eecc.memoriaTexto);
+        setVal('mp-textarea-revisores', eecc.informeRevisoresTexto);
+      }
+
+      // 0. CARATULA PREVIEW
+      const carPreview = document.getElementById('mp-caratula-preview');
+      if (carPreview) {
+        carPreview.innerHTML = `
+          <div class="text-center pb-3 border-b-2 border-black">
+            <h2 class="text-base font-black uppercase tracking-wide text-black">${car.razonSocial}</h2>
+            ${car.rnos ? `<p class="text-xs font-semibold text-slate-700 mt-0.5">AGENTE DEL SEGURO DE SALUD — RNOS N° ${car.rnos}</p>` : ''}
+            <h3 class="text-xs font-bold uppercase mt-2 text-black">ESTADOS CONTABLES CORRESPONDIENTES AL EJERCICIO ECONÓMICO</h3>
+            <p class="text-xs font-black text-black">INICIADO EL ${car.fechaInicio || '01 de Enero'} Y FINALIZADO EL ${car.fechaCierre}</p>
+            <p class="text-[11px] italic text-slate-600 mt-0.5">Comparativo con el ejercicio anterior (${car.fechaComparativo}) — Expresados en pesos en moneda homogénea (RT 54 - T.O. RT 59)</p>
+          </div>
+          <table class="w-full text-xs border border-black my-4 border-collapse">
+            <tbody>
+              <tr><td class="p-2 border border-slate-400 bg-slate-100 font-bold w-1/3">DENOMINACIÓN DE LA ENTIDAD:</td><td class="p-2 border border-slate-400 font-semibold">${car.razonSocial}</td></tr>
+              <tr><td class="p-2 border border-slate-400 bg-slate-100 font-bold">DOMICILIO LEGAL / SEDE:</td><td class="p-2 border border-slate-400">${car.domicilioLegal || 'Ciudad Autónoma de Buenos Aires'}</td></tr>
+              <tr><td class="p-2 border border-slate-400 bg-slate-100 font-bold">C.U.I.T.:</td><td class="p-2 border border-slate-400 font-mono font-bold">${car.cuit}</td></tr>
+              <tr><td class="p-2 border border-slate-400 bg-slate-100 font-bold">INSCRIPCIÓN / RNOS:</td><td class="p-2 border border-slate-400">${car.rnos || 'Inscripta en Organismo de Contralor'}</td></tr>
+              <tr><td class="p-2 border border-slate-400 bg-slate-100 font-bold">FECHA DE CIERRE DEL EJERCICIO:</td><td class="p-2 border border-slate-400 font-bold">${car.fechaCierre}</td></tr>
+              <tr><td class="p-2 border border-slate-400 bg-slate-100 font-bold">FECHA CIERRE ANTERIOR (COMPARATIVO):</td><td class="p-2 border border-slate-400 font-bold">${car.fechaComparativo}</td></tr>
+              <tr><td class="p-2 border border-slate-400 bg-slate-100 font-bold">CARÁCTER DE LA ENTIDAD (RT 54):</td><td class="p-2 border border-slate-400">${car.tipoEntidad || ''} — ${car.categoriaRt54 || ''}</td></tr>
+              <tr><td class="p-2 border border-slate-400 bg-slate-100 font-bold">UNIDAD DE MEDIDA:</td><td class="p-2 border border-slate-400">Moneda homogénea de poder adquisitivo de cierre (RT 54 - Nota 1.3)</td></tr>
+            </tbody>
+          </table>
+          <div class="mt-4 pt-3 border-t border-slate-200">
+            ${makeMpDobleFirmaHtml(car)}
+          </div>
+        `;
+      }
+
+      // 1. MEMORIA PREVIEW
+      const memPreview = document.getElementById('mp-memoria-preview');
+      if (memPreview) {
+        const memPars = (eecc.memoriaTexto || '').split('\n\n').filter(p => p.trim());
+        memPreview.innerHTML = `
+          ${makeMpCabeceraHtml(car, 'MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN', `Correspondiente al ejercicio finalizado el ${car.fechaCierre}`)}
+          <div class="space-y-3 text-xs text-slate-800 leading-relaxed my-4 text-justify">
+            ${memPars.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')}
+          </div>
+          <div class="mt-6 pt-3 border-t border-slate-200">
+            ${makeMpDobleFirmaHtml(car)}
+          </div>
+        `;
+      }
+
+      // 2. ESP TABLE
       document.getElementById('mp-esp-cabecera').innerHTML = makeMpCabeceraHtml(car, 'ESTADO DE SITUACIÓN PATRIMONIAL', `Al ${car.fechaCierre} comparativo con el ejercicio anterior (${car.fechaComparativo}). En pesos en moneda homogénea (Nota 1.3).`);
       document.getElementById('mp-esp-firma').innerHTML = makeMpDobleFirmaHtml(car);
 
@@ -938,7 +1200,7 @@
       </tbody>`;
       document.getElementById('mp-esp-table').innerHTML = espRowsHtml;
 
-      // 2. EERR TABLE
+      // 3. EERR TABLE
       document.getElementById('mp-eerr-cabecera').innerHTML = makeMpCabeceraHtml(car, eecc.eerr.titulo);
       document.getElementById('mp-eerr-firma').innerHTML = makeMpDobleFirmaHtml(car);
       let eerrHtml = `
@@ -966,7 +1228,7 @@
       eerrHtml += `</tbody>`;
       document.getElementById('mp-eerr-table').innerHTML = eerrHtml;
 
-      // 3. EEPN TABLE
+      // 4. EEPN TABLE
       document.getElementById('mp-eepn-cabecera').innerHTML = makeMpCabeceraHtml(car, eecc.eepn.titulo);
       document.getElementById('mp-eepn-firma').innerHTML = makeMpDobleFirmaHtml(car);
       let eepnHtml = `
@@ -1007,7 +1269,7 @@
       eepnHtml += `</tbody>`;
       document.getElementById('mp-eepn-table').innerHTML = eepnHtml;
 
-      // 4. EFE TABLE
+      // 5. EFE TABLE
       document.getElementById('mp-efe-cabecera').innerHTML = makeMpCabeceraHtml(car, eecc.efe.titulo);
       document.getElementById('mp-efe-firma').innerHTML = makeMpDobleFirmaHtml(car);
       let efeHtml = `
@@ -1045,7 +1307,19 @@
       efeHtml += `</tbody>`;
       document.getElementById('mp-efe-table').innerHTML = efeHtml;
 
-      // 5. CUADROS DE NOTAS ACTIVO Y PASIVO (13 sub-tables)
+      // 6. NOTAS TEXTUALES RT 54 (UBICADAS ANTES DE LOS CUADROS)
+      const notasCab = document.getElementById('mp-notas-cabecera');
+      if (notasCab) notasCab.innerHTML = makeMpCabeceraHtml(car, 'NOTAS A LOS ESTADOS CONTABLES (RT 54 - T.O. RT 59)');
+      const notasFir = document.getElementById('mp-notas-firma');
+      if (notasFir) notasFir.innerHTML = makeMpDobleFirmaHtml(car);
+      document.getElementById('modal-notas-preview').innerHTML = (rem.notas_preview || []).map(n => `
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+          <div class="font-extrabold text-sm text-[#0D1F3C] border-b border-slate-200 pb-1">${n.titulo}</div>
+          ${(n.parrafos || []).map(p => `<p class="leading-relaxed text-slate-700">${p}</p>`).join('')}
+        </div>
+      `).join('');
+
+      // 7. CUADROS DE NOTAS ACTIVO Y PASIVO (13 sub-tables)
       document.getElementById('mp-badge-cnt-cuadros').textContent = (eecc.cuadrosNotas || []).length;
       let cuadrosHtml = '';
       (eecc.cuadrosNotas || []).forEach(cn => {
@@ -1111,7 +1385,7 @@
       });
       document.getElementById('mp-cuadros-container').innerHTML = cuadrosHtml;
 
-      // 6. ANEXOS A a E (5 Annexes)
+      // 8. ANEXOS A a E (5 Annexes)
       document.getElementById('mp-badge-cnt-anexos').textContent = (eecc.anexos || []).length;
       let anexosHtml = '';
       (eecc.anexos || []).forEach(anx => {
@@ -1140,15 +1414,32 @@
       });
       document.getElementById('mp-anexos-container').innerHTML = anexosHtml;
 
-      // 7. NOTAS TEXTUALES RT 54
-      document.getElementById('modal-notas-preview').innerHTML = (rem.notas_preview || []).map(n => `
-        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-          <div class="font-extrabold text-sm text-[#0D1F3C] border-b border-slate-200 pb-1">${n.titulo}</div>
-          ${(n.parrafos || []).map(p => `<p class="leading-relaxed text-slate-700">${p}</p>`).join('')}
-        </div>
-      `).join('');
+      // 9. COMISIÓN REVISORA PREVIEW (UBICADA ANTES DEL AUDITOR)
+      const revPreview = document.getElementById('mp-revisores-preview');
+      if (revPreview) {
+        const revPars = (eecc.informeRevisoresTexto || '').split('\n\n').filter(p => p.trim());
+        revPreview.innerHTML = `
+          ${makeMpCabeceraHtml(car, 'INFORME DE LA COMISIÓN REVISORA DE CUENTAS / COMISIÓN FISCALIZADORA', `Al Señor Presidente y Miembros de la Comisión Directiva de ${car.razonSocial}`)}
+          <div class="space-y-3 text-xs text-slate-800 leading-relaxed my-4 text-justify">
+            ${revPars.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')}
+          </div>
+          ${makeMpRevisoresFirmaHtml(car)}
+        `;
+      }
 
-      // 8. INFORME AUDITOR RT 37
+      // 10. INFORME AUDITOR RT 37
+      const audCab = document.getElementById('mp-auditor-cabecera');
+      if (audCab) audCab.innerHTML = makeMpCabeceraHtml(car, 'INFORME DEL AUDITOR INDEPENDIENTE (RT 37 MOD. RT 53)', `Al Señor Presidente y Miembros de la Comisión Directiva de ${car.razonSocial}`);
+      const audFir = document.getElementById('mp-auditor-firma');
+      if (audFir) {
+        audFir.innerHTML = `
+          <div class="flex flex-col items-center mt-6 text-xs">
+            <span class="text-[11px] italic text-slate-700 mb-6">Ciudad Autónoma de Buenos Aires, ${car.fechaCertificacion}.-</span>
+            <div class="w-56 border-t border-dashed border-black pt-1 font-bold text-slate-900 text-center">${car.auditorNombre}</div>
+            <div class="text-[11px] text-slate-600 text-center">Contador Público — ${car.auditorMatricula}</div>
+          </div>
+        `;
+      }
       document.getElementById('modal-auditor-preview').innerHTML = (rem.informe_auditor_preview || []).map(sec => `
         <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
           <div class="font-bold text-xs text-[#0D1F3C] mb-1.5 uppercase tracking-wide">${sec.section}</div>
@@ -1156,7 +1447,7 @@
         </div>
       `).join('');
 
-      // 9. RESUMEN MEJORAS
+      // 11. RESUMEN MEJORAS
       document.getElementById('modal-applied-changes').innerHTML = (rem.applied_changes || []).map(c => `
         <div class="p-3.5 rounded-lg bg-emerald-50/70 border border-emerald-200 flex items-start gap-2.5">
           <span class="text-emerald-700 font-black text-sm">✓</span>
@@ -1167,21 +1458,110 @@
         </div>
       `).join('');
 
-      // 10. VISTA A4 COMPLETA (PRINT VIEW)
+      // 12. VISTA A4 COMPLETA (PRINT VIEW EN ORDEN ESTRICTO)
       const a4Cont = document.getElementById('mp-a4all-container');
       a4Cont.innerHTML = `
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-caratula').querySelector('#mp-caratula-preview').outerHTML}</div>
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-memoria').querySelector('#mp-memoria-preview').outerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-esp').innerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-eerr').innerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-eepn').innerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-efe').innerHTML}</div>
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-notas').innerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${cuadrosHtml}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${anexosHtml}</div>
-        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-notas').innerHTML}</div>
+        <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-revisores').querySelector('#mp-revisores-preview').outerHTML}</div>
         <div class="bg-white p-8 rounded-xl border border-black shadow-lg space-y-6">${document.getElementById('panel-mp-auditor').innerHTML}</div>
       `;
     }
 
-    // Export to Word .doc (Exact MICPROJECT SectionLandscape & SectionPortrait multi-page layout)
+    // Dynamic Carátula, Memoria, Revisores & Firmantes update across all pages
+    async function applyCaratulaFirmantesUpdates() {
+      if (!window.lastValidationData || !window.lastValidationData.remediation_info) {
+        alert('No hay balance cargado.');
+        return;
+      }
+      const statusEl = document.getElementById('mp-save-status');
+
+      const getVal = (id) => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+      const cuit = getVal('mp-input-cuit');
+      const razonSocial = getVal('mp-input-razon');
+      const rnos = getVal('mp-input-rnos');
+      const domicilioLegal = getVal('mp-input-sede');
+      const tipoEntidad = getVal('mp-input-tipo-entidad');
+      const fechaCierre = getVal('mp-input-fecha-cierre');
+      const fechaComparativo = getVal('mp-input-fecha-comp');
+      const fechaCertificacion = getVal('mp-input-fecha-cert');
+      const firmanteNombre = getVal('mp-input-firmante');
+      const firmanteCargo = getVal('mp-input-cargo');
+      const auditorNombre = getVal('mp-input-auditor');
+      const auditorMatricula = getVal('mp-input-matricula');
+      const memoriaTexto = document.getElementById('mp-textarea-memoria') ? document.getElementById('mp-textarea-memoria').value : '';
+      const informeRevisoresTexto = document.getElementById('mp-textarea-revisores') ? document.getElementById('mp-textarea-revisores').value : '';
+
+      const payload = {
+        job_id: window.lastValidationData.job_id,
+        cuit,
+        razonSocial,
+        rnos,
+        domicilioLegal,
+        tipoEntidad,
+        fechaCierre,
+        fechaComparativo,
+        fechaCertificacion,
+        firmanteNombre,
+        firmanteCargo,
+        auditorNombre,
+        auditorMatricula,
+        memoriaTexto,
+        informeRevisoresTexto
+      };
+
+      // Mutate local memory immediately
+      const eecc = window.lastValidationData.remediation_info.eecc_structured;
+      const car = eecc.caratulaData;
+      Object.assign(car, {
+        cuit, razonSocial, rnos, domicilioLegal, tipoEntidad,
+        fechaCierre, fechaComparativo, fechaCertificacion,
+        firmanteNombre, firmanteCargo, auditorNombre, auditorMatricula
+      });
+      eecc.memoriaTexto = memoriaTexto;
+      eecc.informeRevisoresTexto = informeRevisoresTexto;
+
+      // Immediately re-render all HTML views
+      populateImprovedModal(window.lastValidationData, false);
+
+      if (statusEl) {
+        statusEl.className = 'p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold flex items-center gap-2';
+        statusEl.innerHTML = '⏳ Regenerando archivos PDF y Word oficiales con los nuevos datos ingresados...';
+        statusEl.classList.remove('hidden');
+      }
+
+      try {
+        const res = await fetch('/api/reexport-improved', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('Error en el servidor al reexportar');
+        const resData = await res.json();
+        if (resData.improved_pdf_url) {
+          document.getElementById('modal-dl-pdf').href = resData.improved_pdf_url;
+          document.getElementById('modal-dl-docx').href = resData.improved_docx_url;
+        }
+        if (statusEl) {
+          statusEl.className = 'p-3 rounded-lg bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs font-bold flex items-center gap-2';
+          statusEl.innerHTML = '✓ ¡Cambios aplicados con éxito! El CUIT, Presidente, Auditor, Memoria e Informe de Revisores se replicaron en todas las páginas y se actualizaron los descargables (PDF y Word).';
+        }
+      } catch (err) {
+        if (statusEl) {
+          statusEl.className = 'p-3 rounded-lg bg-amber-50 border border-amber-300 text-amber-950 text-xs font-bold';
+          statusEl.innerHTML = '✓ Cambios reflejados en pantalla.';
+        }
+      }
+    }
+
+    // Export to Word .doc (Exact MICPROJECT SectionLandscape & SectionPortrait multi-page layout in strict order)
     function exportMpWordDoc() {
       if (!window.lastValidationData || !window.lastValidationData.remediation_info) {
         alert('No hay balance cargado');
@@ -1207,7 +1587,13 @@
           </style>
         </head>
         <body>
+          <div class='SectionPortrait'>
+            ${document.getElementById('mp-caratula-preview').innerHTML}
+            <br clear='all' style='page-break-before:always' />
+            ${document.getElementById('mp-memoria-preview').innerHTML}
+          </div>
           <div class='SectionLandscape'>
+            <br clear='all' style='page-break-before:always' />
             ${document.getElementById('panel-mp-esp').innerHTML}
             <br clear='all' style='page-break-before:always' />
             ${document.getElementById('panel-mp-eerr').innerHTML}
@@ -1215,6 +1601,12 @@
             ${document.getElementById('panel-mp-eepn').innerHTML}
             <br clear='all' style='page-break-before:always' />
             ${document.getElementById('panel-mp-efe').innerHTML}
+          </div>
+          <div class='SectionPortrait'>
+            <br clear='all' style='page-break-before:always' />
+            ${document.getElementById('panel-mp-notas').innerHTML}
+          </div>
+          <div class='SectionLandscape'>
             <br clear='all' style='page-break-before:always' />
             ${document.getElementById('mp-cuadros-container').innerHTML}
             <br clear='all' style='page-break-before:always' />
@@ -1222,7 +1614,7 @@
           </div>
           <div class='SectionPortrait'>
             <br clear='all' style='page-break-before:always' />
-            ${document.getElementById('panel-mp-notas').innerHTML}
+            ${document.getElementById('mp-revisores-preview').innerHTML}
             <br clear='all' style='page-break-before:always' />
             ${document.getElementById('panel-mp-auditor').innerHTML}
           </div>
@@ -1238,7 +1630,7 @@
       URL.revokeObjectURL(url);
     }
 
-    // Export to Excel .xls (HTML-based Multi-Table Excel Workbook)
+    // Export to Excel .xls (HTML-based Multi-Table Excel Workbook in strict order)
     function exportMpExcel() {
       if (!window.lastValidationData || !window.lastValidationData.remediation_info) {
         alert('No hay balance cargado');
@@ -1257,6 +1649,30 @@
           </style>
         </head>
         <body>
+          <h2>${car.razonSocial} — ESTADOS CONTABLES (FORMATO HOMOLOGADO)</h2>
+          <p>CUIT: ${car.cuit} — Cierre: ${car.fechaCierre}</p>
+          <hr>
+          <h2>ESTADO DE SITUACIÓN PATRIMONIAL</h2>
+          ${document.getElementById('mp-esp-table').outerHTML}
+          <br><br>
+          <h2>ESTADO DE RECURSOS Y GASTOS / RESULTADOS</h2>
+          ${document.getElementById('mp-eerr-table').outerHTML}
+          <br><br>
+          <h2>ESTADO DE EVOLUCIÓN DEL PATRIMONIO NETO</h2>
+          ${document.getElementById('mp-eepn-table').outerHTML}
+          <br><br>
+          <h2>ESTADO DE FLUJOS DE EFECTIVO</h2>
+          ${document.getElementById('mp-efe-table').outerHTML}
+          <br><br>
+          <h2>CUADROS DE NOTAS DE COMPOSICIÓN DE ACTIVO Y PASIVO</h2>
+          ${document.getElementById('mp-cuadros-container').innerHTML}
+          <br><br>
+          <h2>ANEXOS CONTABLES</h2>
+          ${document.getElementById('mp-anexos-container').innerHTML}
+        </body>
+        </html>
+      `;
+      const blob = new Blob(['\ufeff', htmlContent], { type: 'application/vnd.ms-excel' });
           <h2>${car.razonSocial} — ESTADO DE SITUACIÓN PATRIMONIAL</h2>
           ${document.getElementById('mp-esp-table').outerHTML}
           <br><br>

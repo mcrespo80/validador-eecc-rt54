@@ -31,6 +31,7 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 validator_engine = EECCValidator(os.path.join(KB_DIR, "reglas_rt54_cpcecaba.json"))
+JOBS_CACHE = {}
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -117,6 +118,7 @@ async def validate_uploaded_file(
             except Exception:
                 pass
 
+        result["job_id"] = job_id
         result["report_pdf_url"] = f"/api/reports/{report_filename}"
         result["improved_pdf_url"] = f"/api/reports/{improved_pdf_name}"
         result["improved_docx_url"] = f"/api/reports/{improved_docx_name}"
@@ -124,6 +126,7 @@ async def validate_uploaded_file(
         result["notes_docx_url"] = f"/api/reports/{notes_docx_name}"
         result["remediation_info"] = remediation_info
         result["tailored_notes_info"] = tailored_notes_info
+        JOBS_CACHE[job_id] = (extracted, result)
         return JSONResponse(content=result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al procesar el documento: {str(e)}")
@@ -177,6 +180,7 @@ async def validate_consejo_sample(
         except Exception:
             pass
 
+    result["job_id"] = job_id
     result["report_pdf_url"] = f"/api/reports/{report_filename}"
     result["improved_pdf_url"] = f"/api/reports/{improved_pdf_name}"
     result["improved_docx_url"] = f"/api/reports/{improved_docx_name}"
@@ -184,7 +188,50 @@ async def validate_consejo_sample(
     result["notes_docx_url"] = f"/api/reports/{notes_docx_name}"
     result["remediation_info"] = remediation_info
     result["tailored_notes_info"] = tailored_notes_info
+    JOBS_CACHE[job_id] = (extracted, result)
     return JSONResponse(content=result)
+
+
+@app.post("/api/reexport-improved")
+async def reexport_improved_eecc(payload: dict):
+    job_id = payload.get("job_id")
+    if not job_id or job_id not in JOBS_CACHE:
+        # If cache lost or restart, try finding most recent in UPLOADS_DIR
+        matched = [f for f in os.listdir(UPLOADS_DIR) if f.startswith(f"{job_id}_")] if job_id else []
+        if matched:
+            fpath = os.path.join(UPLOADS_DIR, matched[0])
+            ext = DocumentExtractor.extract(fpath)
+            res = validator_engine.validate(ext)
+            JOBS_CACHE[job_id] = (ext, res)
+        else:
+            raise HTTPException(status_code=404, detail="Sesión no encontrada. Por favor suba nuevamente el archivo.")
+
+    extracted, result = JOBS_CACHE[job_id]
+    improved_pdf_name = f"EECC_Version_Mejorada_CPCECABA_{job_id}.pdf"
+    improved_docx_name = f"EECC_Version_Mejorada_CPCECABA_{job_id}.docx"
+    improved_pdf_path = os.path.join(REPORTS_DIR, improved_pdf_name)
+    improved_docx_path = os.path.join(REPORTS_DIR, improved_docx_name)
+
+    remediation_info = generate_improved_eecc_package(
+        extracted, result, improved_pdf_path, improved_docx_path, custom_overrides=payload
+    )
+
+    g_drive_rt54 = r"G:\Otros ordenadores\Mi Portátil (1)\MC\RT54"
+    if os.path.exists(g_drive_rt54):
+        try:
+            shutil.copy(improved_pdf_path, os.path.join(g_drive_rt54, "Ultima_Version_Mejorada_EECC_CPCECABA.pdf"))
+            shutil.copy(improved_docx_path, os.path.join(g_drive_rt54, "Ultima_Version_Mejorada_EECC_CPCECABA.docx"))
+        except Exception:
+            pass
+
+    import time
+    timestamp_param = int(time.time())
+    return {
+        "status": "ok",
+        "improved_pdf_url": f"/api/reports/{improved_pdf_name}?t={timestamp_param}",
+        "improved_docx_url": f"/api/reports/{improved_docx_name}?t={timestamp_param}",
+        "remediation_info": remediation_info
+    }
 
 
 @app.get("/api/reports/{filename}")

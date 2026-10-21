@@ -893,13 +893,42 @@ def _parse_eecc_structured_data(
     # ------------------------------------------------------------------
     # 7. DETECT INFORME DE COMISIÓN REVISORA DE CUENTAS (IF PRESENT)
     # ------------------------------------------------------------------
-    informe_comision = []
+    informe_comision_lines = []
     for p in pages:
         p_txt = p.get("text", "")
-        if "REVISORA DE CUENTAS" in p_txt.upper() or "COMISIÓN DIRECTIVA" in p_txt.upper() and "ESTATUTO" in p_txt.upper():
+        if "REVISORA DE CUENTAS" in p_txt.upper() or ("COMISIÓN DIRECTIVA" in p_txt.upper() and "ESTATUTO" in p_txt.upper()):
             for ln in p_txt.splitlines():
                 if ln.strip():
-                    informe_comision.append(ln.strip())
+                    informe_comision_lines.append(ln.strip())
+
+    if informe_comision_lines:
+        informe_revisores_texto = "\n".join(informe_comision_lines)
+    else:
+        informe_revisores_texto = (
+            f"INFORME DE LA COMISIÓN REVISORA DE CUENTAS\n\n"
+            f"Al Señor Presidente y Miembros del Consejo Directivo de\n{entity_name}\n\n"
+            f"De nuestra consideración:\n\n"
+            f"En cumplimiento de las funciones encomendadas por las disposiciones estatutarias y legales vigentes, hemos procedido a examinar el Balance General (Estado de Situación Patrimonial) al {closing_date}, el Estado de Recursos y Gastos (o Resultados), el Estado de Evolución del Patrimonio Neto y el Estado de Flujos de Efectivo, así como las Notas 1 a 3 y los Anexos A a E correspondientes al ejercicio cerrado en dicha fecha.\n\n"
+            f"Durante el ejercicio económico se ha practicado la compulsa periódica de los libros contables e inventarios de la Entidad, verificando que los registros se llevan en debida forma legal y que los saldos expuestos concuerdan fielmente con la documentación respaldatoria y los estados bancarios.\n\n"
+            f"Por lo expuesto, aconsejamos a la Asamblea de Asociados / Accionistas prestar su formal aprobación a la Memoria, Inventario y Estados Contables cerrados al {closing_date}.\n\n"
+            f"Ciudad Autónoma de Buenos Aires, {cert_date}.\n\n"
+            f"COMISIÓN REVISORA DE CUENTAS / COMISIÓN FISCALIZADORA"
+        )
+
+    memoria_default_texto = (
+        f"MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN\n\n"
+        f"Señores Asociados / Miembros:\n\n"
+        f"En cumplimiento de las disposiciones legales y estatutarias vigentes, el Órgano de Administración somete a vuestra consideración la Memoria, el Estado de Situación Patrimonial, el Estado de Recursos y Gastos (o Resultados), el Estado de Evolución del Patrimonio Neto, el Estado de Flujos de Efectivo, las Notas y los Anexos correspondientes al ejercicio económico finalizado el {closing_date}.\n\n"
+        f"1. Contexto Operativo y Normativo (RT 54 - T.O. RT 59):\n"
+        f"A lo largo del presente ejercicio económico, la Entidad ha desarrollado sus actividades procurando optimizar los recursos disponibles y dar acabado cumplimiento a su objeto social. En el plano técnico contable, los presentes estados contables han sido preparados conforme a la Resolución Técnica N° 54 (T.O. RT 59 - NUA) adoptada por el CPCECABA mediante la Res. P. N° 460/2024, en pesos en moneda homogénea de fecha de cierre ({closing_date}).\n\n"
+        f"2. Análisis Patrimonial y Económico:\n"
+        f"La gestión de ingresos y egresos ha permitido atender con solvencia las obligaciones corrientes y operativas de la Entidad. La evolución del Patrimonio Neto y las variaciones del efectivo reflejan el sostenimiento de las actividades prioritarias en beneficio de los representados.\n\n"
+        f"3. Proyecciones Futuras:\n"
+        f"Para el próximo ejercicio, continuaremos orientando la gestión al fortalecimiento financiero, la eficiencia en el uso de los fondos y la modernización de los procesos operativos.\n\n"
+        f"Expresamos nuestro sincero agradecimiento a todo el personal, asociados y asesores profesionales por su permanente colaboración y compromiso institucional.\n\n"
+        f"Ciudad Autónoma de Buenos Aires, {cert_date}.\n\n"
+        f"EL ÓRGANO DE ADMINISTRACIÓN"
+    )
 
     return {
         "caratulaData": {
@@ -919,6 +948,8 @@ def _parse_eecc_structured_data(
             "auditorMatricula": "C.P.C.E.C.A.B.A. T° ... F° ...",
             "fechaCertificacion": cert_date
         },
+        "memoriaTexto": memoria_default_texto,
+        "informeRevisoresTexto": informe_revisores_texto,
         "esp": esp_data,
         "eerr": {
             "titulo": "ESTADO DE RECURSOS Y GASTOS" if is_esfl else "ESTADO DE RESULTADOS",
@@ -935,7 +966,7 @@ def _parse_eecc_structured_data(
         },
         "cuadrosNotas": cuadros_notas,
         "anexos": anexos_list,
-        "informeComision": informe_comision
+        "informeComision": informe_comision_lines
     }
 
 
@@ -943,7 +974,8 @@ def generate_improved_eecc_package(
     extracted_doc: Dict[str, Any],
     validation_result: Dict[str, Any],
     output_pdf_path: str,
-    output_docx_path: str
+    output_docx_path: str,
+    custom_overrides: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
     Generates an improved, corrected version of the uploaded EECC in the exact MICPROJECT
@@ -1050,6 +1082,42 @@ def generate_improved_eecc_package(
         cat_rt54=cat_rt54,
         is_esfl=is_esfl
     )
+
+    if custom_overrides:
+        if custom_overrides.get("cuit"):
+            cuit = custom_overrides["cuit"].strip()
+            eecc_structured["caratulaData"]["cuit"] = cuit
+        if custom_overrides.get("razonSocial"):
+            entity_name = custom_overrides["razonSocial"].strip()
+            eecc_structured["caratulaData"]["razonSocial"] = entity_name
+        if custom_overrides.get("rnos"):
+            eecc_structured["caratulaData"]["rnos"] = custom_overrides["rnos"].strip()
+        if custom_overrides.get("domicilioLegal"):
+            eecc_structured["caratulaData"]["domicilioLegal"] = custom_overrides["domicilioLegal"].strip()
+        if custom_overrides.get("fechaInicio"):
+            eecc_structured["caratulaData"]["fechaInicio"] = custom_overrides["fechaInicio"].strip()
+        if custom_overrides.get("fechaCierre"):
+            closing_date = custom_overrides["fechaCierre"].strip()
+            eecc_structured["caratulaData"]["fechaCierre"] = closing_date
+        if custom_overrides.get("fechaComparativo"):
+            comp_date = custom_overrides["fechaComparativo"].strip()
+            eecc_structured["caratulaData"]["fechaComparativo"] = comp_date
+        if custom_overrides.get("tipoEntidad"):
+            eecc_structured["caratulaData"]["tipoEntidad"] = custom_overrides["tipoEntidad"].strip()
+        if custom_overrides.get("firmanteNombre"):
+            eecc_structured["caratulaData"]["firmanteNombre"] = custom_overrides["firmanteNombre"].strip()
+        if custom_overrides.get("firmanteCargo"):
+            eecc_structured["caratulaData"]["firmanteCargo"] = custom_overrides["firmanteCargo"].strip()
+        if custom_overrides.get("auditorNombre"):
+            eecc_structured["caratulaData"]["auditorNombre"] = custom_overrides["auditorNombre"].strip()
+        if custom_overrides.get("auditorMatricula"):
+            eecc_structured["caratulaData"]["auditorMatricula"] = custom_overrides["auditorMatricula"].strip()
+        if custom_overrides.get("fechaCertificacion"):
+            eecc_structured["caratulaData"]["fechaCertificacion"] = custom_overrides["fechaCertificacion"].strip()
+        if custom_overrides.get("memoriaTexto"):
+            eecc_structured["memoriaTexto"] = custom_overrides["memoriaTexto"].strip()
+        if custom_overrides.get("informeRevisoresTexto"):
+            eecc_structured["informeRevisoresTexto"] = custom_overrides["informeRevisoresTexto"].strip()
 
     # Also build tailored textual notes (Nota 1, Nota 2 rubric-by-rubric, Nota 3 revelations)
     from core.notes_generator import detect_active_rubros_from_balance
@@ -1268,7 +1336,7 @@ def _build_micproject_pdf(
         ("LEFTPADDING", (0, 0), (-1, -1), 3 * mm),
     ]))
     story.append(t_car)
-    story.append(Spacer(1, 5 * mm))
+    story.append(Spacer(1, 4 * mm))
 
     # Summary of Remediations box on Cover Page
     story.append(Paragraph("ÍNDICE DE ESTADOS CONTABLES Y ADECUACIONES APLICADAS (FORMATO MICPROJECT)", st_h2))
@@ -1287,7 +1355,19 @@ def _build_micproject_pdf(
     story.append(t_chg)
 
     # ==================================================================
-    # PAGE 2 (LANDSCAPE): BLOQUE ESP (2-COLUMN SIDE-BY-SIDE ACTIVO | PASIVO Y PN)
+    # PAGE 2 (PORTRAIT): MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN
+    # ==================================================================
+    story.append(PageBreak())
+    add_statement_header(story, "MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN", f"Correspondiente al ejercicio finalizado el {closing_date}")
+    memoria_txt = eecc.get("memoriaTexto", "")
+    for par in memoria_txt.split("\n\n"):
+        p_c = par.strip()
+        if p_c:
+            story.append(Paragraph(p_c.replace("\n", "<br/>"), st_body))
+            story.append(Spacer(1, 2.2 * mm))
+
+    # ==================================================================
+    # PAGE 3 (LANDSCAPE): BLOQUE ESP (2-COLUMN SIDE-BY-SIDE ACTIVO | PASIVO Y PN)
     # ==================================================================
     story.append(NextPageTemplate("Landscape"))
     story.append(PageBreak())
@@ -1525,8 +1605,24 @@ def _build_micproject_pdf(
     ))
 
     # ==================================================================
-    # PAGES 6-7 (LANDSCAPE): BLOQUE CUADROS DE NOTAS ACTIVO Y PASIVO (NOTA 2 Y 3)
+    # PAGES (PORTRAIT): BLOQUE NOTAS TEXTUALES RT 54 (MICPROJECT BloqueNotas)
+    # (LAS NOTAS TEXTUALES VAN ANTES DE LOS CUADROS DE NOTAS DE ACTIVO Y PASIVO)
     # ==================================================================
+    story.append(NextPageTemplate("Portrait"))
+    story.append(PageBreak())
+    add_statement_header(story, "NOTAS A LOS ESTADOS CONTABLES — BASES Y POLÍTICAS CONTABLES (RT 54)")
+    for sec in notas_obligatorias:
+        story.append(Paragraph(f"<u><b>{sec['titulo']}</b></u>", st_h2))
+        story.append(Spacer(1, 2 * mm))
+        for p_txt in sec["parrafos"]:
+            story.append(Paragraph(p_txt, st_body))
+            story.append(Spacer(1, 2.0 * mm))
+        story.append(Spacer(1, 2 * mm))
+
+    # ==================================================================
+    # PAGES (LANDSCAPE): CUADROS DE NOTAS DE COMPOSICIÓN DE ACTIVO Y PASIVO (NOTAS 2.1 A 2.13)
+    # ==================================================================
+    story.append(NextPageTemplate("Landscape"))
     if eecc["cuadrosNotas"]:
         story.append(PageBreak())
         add_statement_header(story, "NOTAS A LOS ESTADOS CONTABLES — CUADROS DE COMPOSICIÓN DE RUBROS DE ACTIVO Y PASIVO")
@@ -1628,29 +1724,27 @@ def _build_micproject_pdf(
         story.append(t_anx)
 
     # ==================================================================
-    # PAGES (PORTRAIT): BLOQUE NOTAS TEXTUALES RT 54 (MICPROJECT BloqueNotas)
+    # PAGE (PORTRAIT): INFORME DE LA COMISIÓN REVISORA DE CUENTAS
+    # (UBICADO ANTES DEL INFORME DEL AUDITOR INDEPENDIENTE)
     # ==================================================================
     story.append(NextPageTemplate("Portrait"))
     story.append(PageBreak())
-    add_statement_header(story, "ANEXO TEXTUAL DE NOTAS A LOS ESTADOS CONTABLES (RT 54 - T.O. RT 59)")
-    for sec in notas_obligatorias:
-        story.append(Paragraph(f"<u><b>{sec['titulo']}</b></u>", st_h2))
-        story.append(Spacer(1, 2 * mm))
-        for p_txt in sec["parrafos"]:
-            story.append(Paragraph(p_txt, st_body))
-            story.append(Spacer(1, 2.0 * mm))
-        story.append(Spacer(1, 2 * mm))
-
-    # ==================================================================
-    # PAGE (PORTRAIT): INFORME COMISIÓN REVISORA (IF PRESENT) + INFORME AUDITOR RT 37
-    # ==================================================================
-    if eecc["informeComision"]:
-        story.append(PageBreak())
-        add_statement_header(story, "INFORME DE LA COMISIÓN REVISORA DE CUENTAS")
+    add_statement_header(story, "INFORME DE LA COMISIÓN REVISORA DE CUENTAS / COMISIÓN FISCALIZADORA")
+    revisores_txt = eecc.get("informeRevisoresTexto", "")
+    if revisores_txt:
+        for par in revisores_txt.split("\n\n"):
+            p_c = par.strip()
+            if p_c:
+                story.append(Paragraph(p_c.replace("\n", "<br/>"), st_body))
+                story.append(Spacer(1, 2.2 * mm))
+    elif eecc.get("informeComision"):
         for ln in eecc["informeComision"]:
             story.append(Paragraph(ln, st_body))
             story.append(Spacer(1, 1.8 * mm))
 
+    # ==================================================================
+    # PAGE (PORTRAIT): INFORME DEL AUDITOR INDEPENDIENTE (RT 37 MOD. RT 53)
+    # ==================================================================
     story.append(PageBreak())
     for sec_label, p_text in informe_auditor_parrafos:
         if sec_label == "TÍTULO OFICIAL":
@@ -1754,13 +1848,23 @@ def _build_micproject_docx(
         t_car.cell(idx_i, 1).text = v
     _add_docx_doble_firma(d, car)
 
-    # Switch to Landscape for Financial Statements & Annexes
+    # 2. MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN (Portrait)
+    d.add_page_break()
+    _add_docx_header_and_signatures(d, "MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN", car)
+    memoria_txt = eecc.get("memoriaTexto", "")
+    for par in memoria_txt.split("\n\n"):
+        p_c = par.strip()
+        if p_c:
+            d.add_paragraph(p_c)
+    _add_docx_doble_firma(d, car)
+
+    # Switch to Landscape for Financial Statements (ESP, EERR, EEPN, EFE)
     sec_land = d.add_section()
     sec_land.orientation = WD_ORIENT.LANDSCAPE
     sec_land.page_width = Mm(297)
     sec_land.page_height = Mm(210)
 
-    # 2. ESTADO DE SITUACIÓN PATRIMONIAL (6-column side-by-side)
+    # 3. ESTADO DE SITUACIÓN PATRIMONIAL (6-column side-by-side)
     _add_docx_header_and_signatures(d, "ESTADO DE SITUACIÓN PATRIMONIAL", car)
     esp = eecc["esp"]
     left_rows = [("ACTIVO CORRIENTE", "", "")] + [(f"{r['label']} ({r['nota']})" if r.get("nota") else r["label"], fmt_num_cell(r["actual"]), fmt_num_cell(r["anterior"])) for r in esp["activoCorriente"]] + [("Total del Activo Corriente", fmt_num_cell(esp["totalActivoCorriente"]["actual"]), fmt_num_cell(esp["totalActivoCorriente"]["anterior"])), ("ACTIVO NO CORRIENTE", "", "")] + [(f"{r['label']} ({r['nota']})" if r.get("nota") else r["label"], fmt_num_cell(r["actual"]), fmt_num_cell(r["anterior"])) for r in esp["activoNoCorriente"]] + [("Total del Activo No Corriente", fmt_num_cell(esp["totalActivoNoCorriente"]["actual"]), fmt_num_cell(esp["totalActivoNoCorriente"]["anterior"]))]
@@ -1785,7 +1889,7 @@ def _build_micproject_docx(
         t_esp.cell(max_l + 1, c_i).text = val
     _add_docx_doble_firma(d, car)
 
-    # 3. EERR
+    # 4. EERR
     d.add_page_break()
     _add_docx_header_and_signatures(d, eecc["eerr"]["titulo"], car)
     er_filas = eecc["eerr"]["filas"]
@@ -1800,7 +1904,7 @@ def _build_micproject_docx(
         t_er.cell(r_i, 3).text = "" if r["isHeader"] else fmt_num_cell(r["anterior"], True)
     _add_docx_doble_firma(d, car)
 
-    # 4. EEPN
+    # 5. EEPN
     d.add_page_break()
     _add_docx_header_and_signatures(d, eecc["eepn"]["titulo"], car)
     eepn_filas = eecc["eepn"]["filas"]
@@ -1814,7 +1918,7 @@ def _build_micproject_docx(
             t_eepn.cell(r_i, c_i).text = v
     _add_docx_doble_firma(d, car)
 
-    # 5. EFE
+    # 6. EFE
     d.add_page_break()
     _add_docx_header_and_signatures(d, eecc["efe"]["titulo"], car)
     efe_all = eecc["efe"]["variacion"] + eecc["efe"]["causas"]
@@ -1828,7 +1932,27 @@ def _build_micproject_docx(
         t_efe.cell(r_i, 2).text = "" if r.get("isHeader") else fmt_num_cell(r["anterior"], True)
     _add_docx_doble_firma(d, car)
 
-    # 6. CUADROS DE NOTAS DE ACTIVO Y PASIVO
+    # Switch to Portrait for Textual Notes RT 54 (BEFORE Notes Tables!)
+    sec_notas_port = d.add_section()
+    sec_notas_port.orientation = WD_ORIENT.PORTRAIT
+    sec_notas_port.page_width = Mm(210)
+    sec_notas_port.page_height = Mm(297)
+
+    # 7. NOTAS TEXTUALES RT 54
+    _add_docx_header_and_signatures(d, "NOTAS A LOS ESTADOS CONTABLES — BASES Y POLÍTICAS (RT 54)", car)
+    for sec in notas_obligatorias:
+        d.add_heading(sec["titulo"], level=2)
+        for p_txt in sec["parrafos"]:
+            d.add_paragraph(p_txt)
+    _add_docx_doble_firma(d, car)
+
+    # Switch to Landscape for Notes Tables and Annexes
+    sec_tables_land = d.add_section()
+    sec_tables_land.orientation = WD_ORIENT.LANDSCAPE
+    sec_tables_land.page_width = Mm(297)
+    sec_tables_land.page_height = Mm(210)
+
+    # 8. CUADROS DE NOTAS DE COMPOSICIÓN DE ACTIVO Y PASIVO (13 Cuadros)
     if eecc["cuadrosNotas"]:
         d.add_page_break()
         _add_docx_header_and_signatures(d, "CUADROS DE NOTAS DE COMPOSICIÓN DE ACTIVO Y PASIVO", car)
@@ -1856,7 +1980,7 @@ def _build_micproject_docx(
                         t_c.cell(r_i, c_i).text = v
         _add_docx_doble_firma(d, car)
 
-    # 7. ANEXOS CONTABLES A a E
+    # 9. ANEXOS CONTABLES A a E
     for anx in eecc["anexos"]:
         d.add_page_break()
         _add_docx_header_and_signatures(d, anx["titulo"], car)
@@ -1870,19 +1994,26 @@ def _build_micproject_docx(
                 t_a.cell(r_i, c_i).text = str(val)
         _add_docx_doble_firma(d, car)
 
-    # Switch back to Portrait for Textual Notes & Auditor Report
-    sec_port = d.add_section()
-    sec_port.orientation = WD_ORIENT.PORTRAIT
-    sec_port.page_width = Mm(210)
-    sec_port.page_height = Mm(297)
+    # Switch to Portrait for Comisión Revisora and Auditor Report
+    sec_aud_port = d.add_section()
+    sec_aud_port.orientation = WD_ORIENT.PORTRAIT
+    sec_aud_port.page_width = Mm(210)
+    sec_aud_port.page_height = Mm(297)
 
-    _add_docx_header_and_signatures(d, "ANEXO TEXTUAL DE NOTAS A LOS ESTADOS CONTABLES (RT 54)", car)
-    for sec in notas_obligatorias:
-        d.add_heading(sec["titulo"], level=2)
-        for p_txt in sec["parrafos"]:
-            d.add_paragraph(p_txt)
+    # 10. INFORME DE LA COMISIÓN REVISORA DE CUENTAS
+    _add_docx_header_and_signatures(d, "INFORME DE LA COMISIÓN REVISORA DE CUENTAS / COMISIÓN FISCALIZADORA", car)
+    revisores_txt = eecc.get("informeRevisoresTexto", "")
+    if revisores_txt:
+        for par in revisores_txt.split("\n\n"):
+            p_c = par.strip()
+            if p_c:
+                d.add_paragraph(p_c)
+    elif eecc.get("informeComision"):
+        for ln in eecc["informeComision"]:
+            d.add_paragraph(ln)
     _add_docx_doble_firma(d, car)
 
+    # 11. INFORME DE AUDITORÍA EMITIDO POR EL AUDITOR INDEPENDIENTE (RT 37)
     d.add_page_break()
     _add_docx_header_and_signatures(d, "INFORME DE AUDITORÍA EMITIDO POR EL AUDITOR INDEPENDIENTE", car)
     for sec_label, p_text in informe_auditor_parrafos:
