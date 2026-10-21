@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Validador Pre-Legalización EECC | RT 54 & CPCECABA | MIC Digital Consulting</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; background-color: #F1F5F9; color: #0F172A; }
+    .navy-gradient { background: linear-gradient(135deg, #0D1F3C 0%, #1A365D 100%); }
+    .gold-border { border-color: #C59B27; }
+    .gold-text { color: #C59B27; }
+    .gold-bg { background-color: #C59B27; }
+    .drop-active { border-color: #C59B27 !important; background-color: #FDFBF7 !important; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Corporate Bar -->
+  <div class="h-1.5 w-full bg-[#C59B27]"></div>
+  <header class="navy-gradient text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-white/10 border border-[#C59B27]/50 flex items-center justify-center font-extrabold text-xl tracking-wider text-[#C59B27]">
+          MIC
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-lg font-bold tracking-wide">MIC DIGITAL CONSULTING</h1>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-[#C59B27]/20 text-[#FDE68A] border border-[#C59B27]/40 font-semibold">
+              RT 54 (T.O. RT 59) • RT 37 (mod. RT 53)
+            </span>
+          </div>
+          <p class="text-xs text-slate-300 mt-0.5">
+            Validador y Auditor Automático de Estados Contables — Pre-Legalización Web CPCECABA / CPCEPBA
+          </p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex items-center gap-2 bg-slate-900/40 p-1 rounded-lg border border-white/10">
+        <button onclick="switchTab('validador')" id="tab-btn-validador" class="px-4 py-1.5 rounded-md text-xs font-semibold bg-[#C59B27] text-slate-950 transition">
+          1. Validador de EECC
+        </button>
+        <button onclick="switchTab('normativa')" id="tab-btn-normativa" class="px-4 py-1.5 rounded-md text-xs font-semibold text-slate-200 hover:text-white transition">
+          2. Base Normativa y Modelos CPCECABA
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-6 py-6">
+
+    <!-- TAB 1: VALIDADOR -->
+    <div id="tab-validador" class="space-y-6">
+
+      <!-- Upload & Quick Test Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Drag & Drop Zone (2 cols) -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h2 class="text-base font-bold text-slate-800">Cargar Estados Contables para Auditoría Pre-Legalización</h2>
+              <p class="text-xs text-slate-500">Soporta PDF (nativo o escaneado con OCR automático), Word (.docx) y Excel (.xlsx)</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs font-semibold text-slate-600">Jurisdicción:</label>
+              <select id="jurisdiction-select" class="text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 bg-slate-50 font-medium text-slate-800 focus:outline-none focus:border-[#0D1F3C]">
+                <option value="AUTO">Automática (Detectar CABA / PBA)</option>
+                <option value="CABA">CABA (CPCECABA - Res. P. 460/24 y CD 46/21)</option>
+                <option value="PBA">Provincia Bs. As. (CPCEPBA - Res. CD 3843)</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="dropzone" class="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center transition cursor-pointer hover:border-[#0D1F3C] bg-slate-50/60"
+               onclick="document.getElementById('file-input').click()">
+            <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.xlsx" onchange="handleFileSelect(event)" />
+            <div class="w-12 h-12 rounded-full bg-[#0D1F3C]/10 text-[#0D1F3C] mx-auto flex items-center justify-center mb-3">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+              </svg>
+            </div>
+            <p class="text-sm font-semibold text-slate-700">Arrastrá y soltá aquí el PDF, Word o Excel de los Estados Contables</p>
+            <p class="text-xs text-slate-500 mt-1">o hacé clic para seleccionar un archivo de tu equipo</p>
+            <div class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0D1F3C] text-white text-xs font-semibold shadow-sm hover:bg-[#1A365D] transition">
+              Seleccionar Archivo para Auditar
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Test Panel with Consejo Files & Real EECC -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-bold text-slate-800">Probar con Archivos de Referencia</h3>
+              <span class="text-[11px] px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded font-medium">Carpeta RT54</span>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">
+              Ejecutá el validador sobre un Balance real o sobre los modelos de la carpeta <code class="bg-slate-100 px-1 rounded">MC\RT54</code>:
+            </p>
+            <div class="space-y-2 max-h-52 overflow-y-auto pr-1" id="quick-samples-list">
+              <button onclick="runSample('OSETYA_Estados_Contables_2025_2026.pdf')" class="w-full text-left px-3 py-2 rounded-lg border border-slate-200 hover:border-[#C59B27] hover:bg-amber-50/30 transition flex items-center justify-between group">
+                <div class="truncate pr-2">
+                  <div class="text-xs font-semibold text-slate-800 group-hover:text-[#0D1F3C] truncate">📄 OSETYA_Estados_Contables_2025_2026.pdf</div>
+                  <div class="text-[11px] text-slate-500">Caso Real Escaneado (OCR + Cuadratura)</div>
+                </div>
+                <span class="text-xs font-bold text-[#C59B27] shrink-0">Validar →</span>
+              </button>
+              <button onclick="runSample('MODELO DE INFORME DE AUDITORÍA.pba.docx')" class="w-full text-left px-3 py-2 rounded-lg border border-slate-200 hover:border-[#C59B27] hover:bg-amber-50/30 transition flex items-center justify-between group">
+                <div class="truncate pr-2">
+                  <div class="text-xs font-semibold text-slate-800 group-hover:text-[#0D1F3C] truncate">📝 MODELO DE INFORME DE AUDITORÍA.pba.docx</div>
+                  <div class="text-[11px] text-slate-500">Informe Completo (CET. LEO KANNER S.A.)</div>
+                </div>
+                <span class="text-xs font-bold text-[#C59B27] shrink-0">Validar →</span>
+              </button>
+              <button onclick="runSample('RT 54 Modelo de EECC para RE con fines de lucro.docx')" class="w-full text-left px-3 py-2 rounded-lg border border-slate-200 hover:border-[#C59B27] hover:bg-amber-50/30 transition flex items-center justify-between group">
+                <div class="truncate pr-2">
+                  <div class="text-xs font-semibold text-slate-800 group-hover:text-[#0D1F3C] truncate">📘 RT 54 Modelo EECC RE con fines de lucro.docx</div>
+                  <div class="text-[11px] text-slate-500">Modelo Oficial CPCECABA (Detectar campos plantilla)</div>
+                </div>
+                <span class="text-xs font-bold text-[#C59B27] shrink-0">Validar →</span>
+              </button>
+              <button onclick="runSample('RT 54 Modelo de EECC para EP sin fines de lucro.docx')" class="w-full text-left px-3 py-2 rounded-lg border border-slate-200 hover:border-[#C59B27] hover:bg-amber-50/30 transition flex items-center justify-between group">
+                <div class="truncate pr-2">
+                  <div class="text-xs font-semibold text-slate-800 group-hover:text-[#0D1F3C] truncate">📗 RT 54 Modelo EECC EP sin fines de lucro.docx</div>
+                  <div class="text-[11px] text-slate-500">Modelo Oficial Entidades Pequeñas SFL</div>
+                </div>
+                <span class="text-xs font-bold text-[#C59B27] shrink-0">Validar →</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div id="loading-box" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center">
+        <div class="inline-block w-10 h-10 border-4 border-[#0D1F3C] border-t-[#C59B27] rounded-full animate-spin mb-3"></div>
+        <h3 class="text-sm font-bold text-slate-800">Analizando Estados Contables, Notas e Informe del Auditor...</h3>
+        <p class="text-xs text-slate-500 mt-1">Verificando reglas de RT 54 (NUA), RT 37 (mod. RT 53), consistencia formal CPCECABA y cuadratura numérica (OCR automático si es imagen).</p>
+      </div>
+
+      <!-- Validation Results Container -->
+      <div id="results-container" class="hidden space-y-6">
+
+        <!-- Top Status Banner -->
+        <div id="dictamen-banner" class="rounded-xl p-5 border-l-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2.5">
+              <span id="semaforo-badge" class="px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wider"></span>
+              <span id="file-badge" class="text-xs text-slate-500 font-medium"></span>
+            </div>
+            <h2 id="dictamen-title" class="text-lg font-extrabold text-slate-900"></h2>
+            <p id="dictamen-subtitle" class="text-xs text-slate-600"></p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3 shrink-0">
+            <div class="text-center px-4 py-2 rounded-lg bg-slate-100 border border-slate-200">
+              <div class="text-[10px] font-bold uppercase text-slate-500">Puntaje Normativo</div>
+              <div id="score-val" class="text-2xl font-black text-[#0D1F3C]">0/100</div>
+            </div>
+            <button onclick="openImprovedModal()" class="px-4 py-3 rounded-lg bg-[#C59B27] hover:bg-[#b08920] text-slate-950 text-xs font-extrabold shadow flex items-center gap-2 transition cursor-pointer">
+              <svg class="w-4 h-4 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              ✨ Ver Versión Mejorada (Lista para Consejo)
+            </button>
+            <a id="download-pdf-btn" href="#" target="_blank" class="px-4 py-3 rounded-lg bg-[#0D1F3C] hover:bg-[#1A365D] text-white text-xs font-bold shadow flex items-center gap-2 transition">
+              <svg class="w-4 h-4 text-[#C59B27]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Reporte de Errores (PDF)
+            </a>
+          </div>
+        </div>
+
+        <!-- KPI Counters + Extracted Entity Metadata -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+          <!-- Entity Metadata Card -->
+          <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
+              Ficha Técnica Detectada en los Estados Contables
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+              <div>
+                <span class="text-slate-400 block font-medium">Denominación de la Entidad</span>
+                <span id="meta-denominacion" class="font-bold text-slate-800 mt-0.5 block">-</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">CUIT y Validación Mód. 11</span>
+                <span id="meta-cuit" class="font-bold text-slate-800 mt-0.5 block">-</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">Fecha de Cierre Ejercicio</span>
+                <span id="meta-cierre" class="font-bold text-slate-800 mt-0.5 block">-</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">Tipo de Ente</span>
+                <span id="meta-tipo" class="font-bold text-slate-800 mt-0.5 block">-</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">Categoría RT 54 (NUA)</span>
+                <span id="meta-cat-rt54" class="font-bold text-slate-800 mt-0.5 block">-</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block font-medium">Jurisdicción / Consejo</span>
+                <span id="meta-jurisdiccion" class="font-bold text-slate-800 mt-0.5 block">-</span>
+              </div>
+            </div>
+
+            <!-- Presence of sections pills -->
+            <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2" id="sections-pills"></div>
+          </div>
+
+          <!-- Summary Counters Card -->
+          <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col justify-between">
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
+              Resumen de Controles Ejecutados
+            </h3>
+            <div class="grid grid-cols-3 gap-3 my-auto">
+              <div class="p-3 rounded-lg bg-red-50 border border-red-200 text-center cursor-pointer" onclick="filterChecks('ERROR')">
+                <div id="cnt-errors" class="text-2xl font-black text-red-700">0</div>
+                <div class="text-[11px] font-bold text-red-800 mt-0.5">Críticos (Rechazo)</div>
+              </div>
+              <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-center cursor-pointer" onclick="filterChecks('WARNING')">
+                <div id="cnt-warnings" class="text-2xl font-black text-amber-700">0</div>
+                <div class="text-[11px] font-bold text-amber-800 mt-0.5">Advertencias</div>
+              </div>
+              <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-center cursor-pointer" onclick="filterChecks('PASS')">
+                <div id="cnt-passed" class="text-2xl font-black text-emerald-700">0</div>
+                <div class="text-[11px] font-bold text-emerald-800 mt-0.5">Aprobados</div>
+              </div>
+            </div>
+            <div class="mt-3 text-[11px] text-slate-500 flex items-center justify-between">
+              <span>Hacé clic en un cuadro para filtrar</span>
+              <button onclick="filterChecks('ALL')" class="text-[#0D1F3C] font-bold underline">Ver todos</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Numbers Summary (if detected) -->
+        <div id="financial-numbers-card" class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
+            Magnitudes Contables Extraídas para Control de Cuadratura (Ejercicio Actual vs. Comparativo)
+          </h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs" id="financial-numbers-grid"></div>
+        </div>
+
+        <!-- Detailed Checks List -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="px-6 py-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h3 class="text-sm font-bold text-[#0D1F3C]">Matriz Detallada de Validación (CPCECABA + RT 54 NUA + RT 37)</h3>
+            <div class="flex items-center gap-1.5 text-xs">
+              <button onclick="filterChecks('ALL')" class="px-2.5 py-1 rounded bg-slate-200 hover:bg-slate-300 font-semibold text-slate-700">Todos</button>
+              <button onclick="filterChecks('ERROR')" class="px-2.5 py-1 rounded bg-red-100 hover:bg-red-200 font-semibold text-red-800">Sólo Críticos</button>
+              <button onclick="filterChecks('WARNING')" class="px-2.5 py-1 rounded bg-amber-100 hover:bg-amber-200 font-semibold text-amber-800">Advertencias</button>
+              <button onclick="filterChecks('PASS')" class="px-2.5 py-1 rounded bg-emerald-100 hover:bg-emerald-200 font-semibold text-emerald-800">Aprobados</button>
+            </div>
+          </div>
+          <div id="checks-list" class="divide-y divide-slate-100"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: BASE NORMATIVA Y MODELOS DEL CONSEJO -->
+    <div id="tab-normativa" class="hidden space-y-6">
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h2 class="text-base font-bold text-[#0D1F3C] mb-1">Archivos e Instructivos Oficiales Incorporados (Carpeta RT54)</h2>
+        <p class="text-xs text-slate-500 mb-4">
+          Estos modelos del Consejo Profesional están integrados en la base de conocimientos de <code class="bg-slate-100 px-1 rounded">C:\Users\mcres\validador\knowledge_base</code>:
+        </p>
+        <div id="modelos-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h2 class="text-base font-bold text-[#0D1F3C] mb-1">Tabla de Reclasificaciones y Nuevas Denominaciones RT 54 (NUA)</h2>
+        <p class="text-xs text-slate-500 mb-4">
+          Cambios obligatorios de exposición bajo la Norma Unificada Argentina (salvo uso expreso de la dispensa transitoria Res. JG 660/2026):
+        </p>
+        <div id="reclasificaciones-list" class="space-y-3"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: VER VERSIÓN MEJORADA (LISTA PARA CONSEJO CPCECABA) -->
+  <div id="improved-modal" class="hidden fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+      <!-- Modal Header -->
+      <div class="navy-gradient text-white px-6 py-4 flex items-center justify-between border-b border-[#C59B27]/40">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-[#C59B27] text-slate-950 text-[10px] font-black uppercase">Auto-Remediación RT 54 + RT 37</span>
+            <h3 class="text-base font-extrabold tracking-wide">Versión Mejorada Lista para Presentar en Consejo (CPCECABA)</h3>
+          </div>
+          <p class="text-xs text-slate-300 mt-0.5">
+            Documento depurado sin rubros en cero, con nomenclatura NUA, Notas RT 54 (Res. P. 460/2024), Anexos de Previsiones/Gastos e Informe del Auditor RT 37 (mod. RT 53).
+          </p>
+        </div>
+        <button onclick="closeImprovedModal()" class="text-slate-300 hover:text-white p-1.5 rounded-lg bg-white/10">
+          ✕
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 bg-slate-50">
+        <!-- Download Action Bar -->
+        <div class="bg-white p-4 rounded-xl border border-[#C59B27]/50 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h4 class="text-sm font-bold text-[#0D1F3C]">Archivos Finales Generados para Legalizaciones Web</h4>
+            <p class="text-xs text-slate-500">También se guardó copia automática en tu carpeta <code class="bg-slate-100 px-1 rounded">MC\RT54\Ultima_Version_Mejorada_EECC_CPCECABA</code></p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+            <a id="modal-dl-pdf" href="#" target="_blank" class="px-4 py-2.5 rounded-lg bg-[#0D1F3C] hover:bg-[#1A365D] text-white text-xs font-bold shadow flex items-center gap-2 transition">
+              📄 Descargar PDF Final (Para Consejo)
+            </a>
+            <a id="modal-dl-docx" href="#" target="_blank" class="px-4 py-2.5 rounded-lg bg-[#C59B27] hover:bg-[#b08920] text-slate-950 text-xs font-extrabold shadow flex items-center gap-2 transition">
+              📝 Descargar Word Editable (.docx)
+            </a>
+          </div>
+        </div>
+
+        <!-- Applied Automatic Corrections -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
+            1. Correcciones y Adecuaciones Normativas Aplicadas Automáticamente
+          </h4>
+          <div id="modal-applied-changes" class="space-y-2.5 text-xs"></div>
+        </div>
+
+        <!-- Preview of Mandatory RT 54 Notes -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
+            2. Vista Previa de Notas Obligatorias RT 54 Incorporadas (Moneda Homogénea, Categoría, Dispensas y Previsiones)
+          </h4>
+          <div id="modal-notas-preview" class="space-y-4 text-xs text-slate-700"></div>
+        </div>
+
+        <!-- Preview of RT 37 (mod. RT 53) Auditor Report -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-[#0D1F3C] border-b border-slate-100 pb-2 mb-3">
+            3. Vista Previa del Informe del Auditor Independiente Blindado (RT 37 mod. RT 53 - Res. CD 46/2021 CPCECABA)
+          </h4>
+          <div id="modal-auditor-preview" class="space-y-3 text-xs text-slate-700"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 mt-12 py-4">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500">
+      <div><strong class="text-[#0D1F3C]">MIC DIGITAL CONSULTING</strong> • Servicios Contables y Automatización con IA</div>
+      <div>micdigital.com.ar • contacto@micdigital.com.ar • Tel: 156-111-7714</div>
+    </div>
+  </footer>
+
+  <script>
+    let currentChecks = [];
+
+    function switchTab(tab) {
+      document.getElementById('tab-validador').classList.toggle('hidden', tab !== 'validador');
+      document.getElementById('tab-normativa').classList.toggle('hidden', tab !== 'normativa');
+      document.getElementById('tab-btn-validador').className = tab === 'validador'
+        ? 'px-4 py-1.5 rounded-md text-xs font-semibold bg-[#C59B27] text-slate-950 transition'
+        : 'px-4 py-1.5 rounded-md text-xs font-semibold text-slate-200 hover:text-white transition';
+      document.getElementById('tab-btn-normativa').className = tab === 'normativa'
+        ? 'px-4 py-1.5 rounded-md text-xs font-semibold bg-[#C59B27] text-slate-950 transition'
+        : 'px-4 py-1.5 rounded-md text-xs font-semibold text-slate-200 hover:text-white transition';
+    }
+
+    // Drag & drop setup
+    const dropzone = document.getElementById('dropzone');
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('drop-active'); });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('drop-active'); });
+    });
+    dropzone.addEventListener('drop', e => {
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) uploadAndValidate(files[0]);
+    });
+
+    function handleFileSelect(e) {
+      if (e.target.files && e.target.files.length > 0) {
+        uploadAndValidate(e.target.files[0]);
+      }
+    }
+
+    async function uploadAndValidate(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('jurisdiction', document.getElementById('jurisdiction-select').value);
+
+      document.getElementById('loading-box').classList.remove('hidden');
+      document.getElementById('results-container').classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/validate', { method: 'POST', body: formData });
+        if (!res.ok) {
+          const err = await res.json();
+          alert('Error: ' + (err.detail || 'No se pudo procesar el archivo'));
+          return;
+        }
+        const data = await res.json();
+        renderResults(data);
+      } catch (err) {
+        alert('Error de conexión: ' + err.message);
+      } finally {
+        document.getElementById('loading-box').classList.add('hidden');
+      }
+    }
+
+    async function runSample(filename) {
+      const formData = new FormData();
+      formData.append('filename', filename);
+      formData.append('jurisdiction', document.getElementById('jurisdiction-select').value);
+
+      document.getElementById('loading-box').classList.remove('hidden');
+      document.getElementById('results-container').classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/validate-sample', { method: 'POST', body: formData });
+        if (!res.ok) {
+          const err = await res.json();
+          alert('Error: ' + (err.detail || 'No se pudo validar el archivo de muestra'));
+          return;
+        }
+        const data = await res.json();
+        renderResults(data);
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        document.getElementById('loading-box').classList.add('hidden');
+      }
+    }
+
+    function fmtMoney(val) {
+      if (val === null || val === undefined) return '<span class="text-slate-400">No expuesto</span>';
+      const sign = val < 0 ? '-' : '';
+      const absVal = Math.abs(val);
+      return sign + '$ ' + absVal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function renderResults(data) {
+      document.getElementById('results-container').classList.remove('hidden');
+      const sum = data.summary;
+      const meta = data.entity_metadata;
+      const finfo = data.file_info;
+
+      // Banner colors
+      const banner = document.getElementById('dictamen-banner');
+      const badge = document.getElementById('semaforo-badge');
+      if (sum.semaforo === 'VERDE') {
+        banner.className = 'rounded-xl p-5 border-l-8 border-emerald-600 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase bg-emerald-100 text-emerald-800';
+        badge.textContent = '🟢 APTO LEGALIZACIÓN';
+      } else if (sum.semaforo === 'AMARILLO') {
+        banner.className = 'rounded-xl p-5 border-l-8 border-amber-500 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase bg-amber-100 text-amber-800';
+        badge.textContent = '🟡 CON ADVERTENCIAS';
+      } else {
+        banner.className = 'rounded-xl p-5 border-l-8 border-red-600 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white';
+        badge.className = 'px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase bg-red-100 text-red-800';
+        badge.textContent = '🔴 OBSERVADO / RECHAZO';
+      }
+
+      document.getElementById('file-badge').textContent =
+        `${finfo.file_name} (${finfo.format} • ${finfo.file_size_mb} MB • ${finfo.total_pages} pág.${finfo.is_scanned ? ' • OCR Activo' : ''})`;
+      document.getElementById('dictamen-title').textContent = sum.dictamen;
+      document.getElementById('dictamen-subtitle').textContent =
+        `Se ejecutaron ${sum.total_checks} controles normativos (RT 54 / RT 37 / Legalizaciones CPCECABA) y de consistencia aritmética.`;
+      document.getElementById('score-val').textContent = `${sum.score}/100`;
+      document.getElementById('download-pdf-btn').href = data.report_pdf_url;
+
+      // Metadata
+      document.getElementById('meta-denominacion').textContent = meta.denominacion;
+      document.getElementById('meta-cuit').innerHTML = meta.cuit + (meta.cuit_valido_mod11
+        ? ' <span class="text-emerald-600 font-bold">(Mód.11 OK)</span>'
+        : ' <span class="text-red-600 font-bold">(Sin validar)</span>');
+      document.getElementById('meta-cierre').textContent = meta.fecha_cierre;
+      document.getElementById('meta-tipo').textContent = meta.tipo_ente;
+      document.getElementById('meta-cat-rt54').textContent = meta.categoria_rt54;
+      document.getElementById('meta-jurisdiccion').textContent = meta.jurisdiccion;
+
+      // Pills
+      const sp = meta.secciones_presentes;
+      const pills = [
+        { label: 'Est. Sit. Patrimonial (ESP)', ok: sp.esp },
+        { label: 'Est. Resultados / Recursos (ER/ERG)', ok: sp.er_erg },
+        { label: 'Evolución Patrimonio Neto (EEPN)', ok: sp.eepn },
+        { label: 'Flujo de Efectivo (EFE)', ok: sp.efe },
+        { label: 'Notas y Políticas RT 54', ok: sp.notas },
+        { label: 'Informe del Auditor (RT 37)', ok: sp.informe_auditor },
+      ];
+      document.getElementById('sections-pills').innerHTML = pills.map(p =>
+        `<span class="px-2.5 py-1 rounded-md text-[11px] font-semibold border ${p.ok ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}">
+          ${p.ok ? '✓' : '✗'} ${p.label}
+        </span>`
+      ).join('');
+
+      // Counters
+      document.getElementById('cnt-errors').textContent = sum.errors;
+      document.getElementById('cnt-warnings').textContent = sum.warnings;
+      document.getElementById('cnt-passed').textContent = sum.passed;
+
+      // Financial summary grid
+      const fin = data.financial_summary;
+      const finItems = [
+        { label: 'Total del Activo (ESP)', act: fin.total_activo?.actual, comp: fin.total_activo?.comparativo },
+        { label: 'Total del Pasivo (ESP)', act: fin.total_pasivo?.actual, comp: fin.total_pasivo?.comparativo },
+        { label: 'Patrimonio Neto (ESP)', act: fin.patrimonio_neto_esp?.actual, comp: fin.patrimonio_neto_esp?.comparativo },
+        { label: 'Patrimonio Neto Cierre (EEPN)', act: fin.patrimonio_neto_eepn_cierre?.actual, comp: fin.patrimonio_neto_eepn_cierre?.comparativo },
+        { label: 'Resultado / Superávit (ER/ERG)', act: fin.resultado_ejercicio_er?.actual, comp: fin.resultado_ejercicio_er?.comparativo },
+        { label: 'Resultado / Superávit (EEPN)', act: fin.resultado_ejercicio_eepn?.actual, comp: fin.resultado_ejercicio_eepn?.comparativo },
+        { label: 'Efectivo al Cierre (EFE)', act: fin.efe_efectivo_cierre?.actual, comp: fin.efe_efectivo_cierre?.comparativo },
+        { label: 'Variación Neta Efectivo (EFE)', act: fin.efe_variacion_neta?.actual, comp: fin.efe_variacion_neta?.comparativo },
+      ];
+      document.getElementById('financial-numbers-grid').innerHTML = finItems.map(item => `
+        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200/80">
+          <div class="text-[11px] font-semibold text-slate-500">${item.label}</div>
+          <div class="text-xs font-extrabold text-slate-900 mt-1">Actual: ${fmtMoney(item.act)}</div>
+          <div class="text-[11px] text-slate-500 mt-0.5">Comp.: ${fmtMoney(item.comp)}</div>
+        </div>
+      `).join('');
+
+      currentChecks = data.checks;
+      window.lastValidationData = data;
+      populateImprovedModal(data);
+      filterChecks('ALL');
+    }
+
+    function openImprovedModal() {
+      document.getElementById('improved-modal').classList.remove('hidden');
+    }
+
+    function closeImprovedModal() {
+      document.getElementById('improved-modal').classList.add('hidden');
+    }
+
+    function populateImprovedModal(data) {
+      if (!data.remediation_info) return;
+      const rem = data.remediation_info;
+      document.getElementById('modal-dl-pdf').href = data.improved_pdf_url || '#';
+      document.getElementById('modal-dl-docx').href = data.improved_docx_url || '#';
+
+      document.getElementById('modal-applied-changes').innerHTML = (rem.applied_changes || []).map(c => `
+        <div class="p-3 rounded-lg bg-emerald-50/70 border border-emerald-200 flex items-start gap-2.5">
+          <span class="text-emerald-700 font-black mt-0.5">✓</span>
+          <div>
+            <div class="font-bold text-emerald-950">${c.category}</div>
+            <div class="text-slate-700 mt-0.5">${c.action}</div>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('modal-notas-preview').innerHTML = (rem.notas_preview || []).map(n => `
+        <div class="p-3.5 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
+          <div class="font-bold text-[#0D1F3C]">${n.titulo}</div>
+          ${(n.parrafos || []).map(p => `<p class="leading-relaxed">${p}</p>`).join('')}
+        </div>
+      `).join('');
+
+      document.getElementById('modal-auditor-preview').innerHTML = (rem.informe_auditor_preview || []).map(sec => `
+        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200">
+          <div class="font-bold text-[#0D1F3C] mb-1">${sec.section}</div>
+          <p class="whitespace-pre-line leading-relaxed">${sec.text}</p>
+        </div>
+      `).join('');
+    }
+
+    function filterChecks(statusFilter) {
+      const container = document.getElementById('checks-list');
+      const filtered = statusFilter === 'ALL' ? currentChecks : currentChecks.filter(c => c.status === statusFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">No hay controles en este filtro.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(c => {
+        let badgeHtml = '';
+        let rowBg = 'bg-white';
+        if (c.status === 'ERROR') {
+          badgeHtml = `<span class="px-2.5 py-1 rounded text-[11px] font-extrabold bg-red-100 text-red-800 border border-red-200">🔴 CRÍTICO / RECHAZO</span>`;
+          rowBg = 'bg-red-50/25';
+        } else if (c.status === 'WARNING') {
+          badgeHtml = `<span class="px-2.5 py-1 rounded text-[11px] font-extrabold bg-amber-100 text-amber-800 border border-amber-200">🟡 ADVERTENCIA</span>`;
+          rowBg = 'bg-amber-50/20';
+        } else if (c.status === 'PASS') {
+          badgeHtml = `<span class="px-2.5 py-1 rounded text-[11px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-200">🟢 APROBADO</span>`;
+        } else {
+          badgeHtml = `<span class="px-2.5 py-1 rounded text-[11px] font-extrabold bg-slate-100 text-slate-700 border border-slate-200">ℹ️ INFO</span>`;
+        }
+
+        return `
+          <div class="p-5 ${rowBg} hover:bg-slate-50 transition flex flex-col md:flex-row md:items-start justify-between gap-4">
+            <div class="space-y-1.5 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs font-black text-[#0D1F3C] bg-slate-200/70 px-2 py-0.5 rounded">${c.code}</span>
+                ${badgeHtml}
+                <span class="text-[11px] font-semibold text-slate-400">${c.category}</span>
+              </div>
+              <h4 class="text-sm font-bold text-slate-900">${c.title}</h4>
+              <p class="text-xs text-slate-600 leading-relaxed">${c.detail}</p>
+              ${c.recommendation ? `
+                <div class="mt-2 p-2.5 rounded-lg bg-[#0D1F3C]/5 border border-[#0D1F3C]/15 text-xs text-[#0D1F3C]">
+                  <strong>Cómo solucionarlo antes de subir al Consejo:</strong> ${c.recommendation}
+                </div>
+              ` : ''}
+            </div>
+            <div class="md:text-right shrink-0">
+              <span class="inline-block text-[11px] font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded border border-slate-200">
+                📖 ${c.norm_ref || 'Normativa CPCECABA'}
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadKnowledgeBase() {
+      try {
+        const res = await fetch('/api/knowledge-base');
+        const data = await res.json();
+        const modelosGrid = document.getElementById('modelos-grid');
+        modelosGrid.innerHTML = data.modelos_consejo.map(m => `
+          <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col justify-between gap-3">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#0D1F3C] text-white">${m.ext}</span>
+              <h4 class="text-xs font-bold text-slate-800 mt-2">${m.name}</h4>
+              <p class="text-[11px] text-slate-500 mt-0.5">Tamaño: ${m.size_kb} KB</p>
+            </div>
+            <div class="flex items-center gap-2 pt-2 border-t border-slate-200/70">
+              <button onclick="switchTab('validador'); runSample('${m.name.replace(/'/g, "\\'")}')" class="text-xs font-bold text-[#0D1F3C] hover:text-[#C59B27]">
+                Auditar Modelo →
+              </button>
+              <a href="/api/modelos/${encodeURIComponent(m.name)}" class="ml-auto text-xs font-semibold text-slate-500 hover:text-slate-800 underline">
+                Descargar
+              </a>
+            </div>
+          </div>
+        `).join('');
+
+        const reclasList = document.getElementById('reclasificaciones-list');
+        reclasList.innerHTML = (data.rules.reclasificaciones_nua_frecuentes || []).map(r => `
+          <div class="p-4 rounded-lg border border-slate-200 bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="line-through text-red-600 font-semibold">${r.rubro_anterior}</span>
+                <span class="text-slate-400">➔</span>
+                <span class="text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">${r.rubro_rt54}</span>
+              </div>
+              <p class="text-slate-600">${r.descripcion}</p>
+            </div>
+            <span class="text-[11px] font-semibold text-slate-500 shrink-0">${r.norma_ref}</span>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    loadKnowledgeBase();
+  </script>
+</body>
+</html>

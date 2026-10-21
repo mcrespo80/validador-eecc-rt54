@@ -1,0 +1,26 @@
+# Caching & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+.venv/
+venv/
+env/
+
+# Uploaded user files & generated temporary reports
+uploads/*
+!uploads/.gitkeep
+reports/*
+!reports/.gitkeep
+
+# Office temporary lock files
+~$*.docx
+~$*.xlsx
+
+# OS & IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

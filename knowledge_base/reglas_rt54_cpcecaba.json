@@ -1,0 +1,472 @@
+{
+  "version": "2026.1",
+  "normativa_base": {
+    "contable": "Resolución Técnica N° 54 (T.O. RT 59 y mod.) - Norma Unificada Argentina de Contabilidad (NUA)",
+    "adopcion_caba": "Resolución P. N° 460/2024 CPCECABA (Acta CD N° 1302)",
+    "dispensa_exposicion": "Resolución JG FACPCE N° 660/2026 (Dispensa transitoria de exposición en primera aplicación)",
+    "auditoria_caba": "Resolución Técnica N° 37 (modificada por RT 53) adoptada por Res. C.D. N° 46/2021 y Res. P. N° 391/2022 CPCECABA",
+    "auditoria_pba": "Resolución Técnica N° 37 (modificada por RT 53) aprobada por Res. C.D. N° 3843 CPCEPBA"
+  },
+  "categorias_entidad_rt54": [
+    {
+      "codigo": "EP_SFL",
+      "nombre": "Entidad Pequeña Sin Fines de Lucro (excepto cooperativas)",
+      "estados_basicos": [
+        "Estado de Situación Patrimonial",
+        "Estado de Recursos y Gastos",
+        "Estado de Evolución del Patrimonio Neto",
+        "Estado de Flujos de Efectivo"
+      ],
+      "rubros_activo_nua": [
+        "Caja y bancos",
+        "Inversiones financieras",
+        "Cuentas por cobrar a asociados/entidades afiliadas en moneda",
+        "Cuentas por cobrar a terceros por servicios prestados en moneda",
+        "Créditos impositivos",
+        "Otras cuentas por cobrar a terceros en moneda",
+        "Bienes para consumo o comercialización",
+        "Bienes de uso",
+        "Propiedades de inversión",
+        "Activos intangibles",
+        "Otras inversiones"
+      ],
+      "rubros_pasivo_nua": [
+        "Deudas con proveedores de bienes y servicios",
+        "Préstamos y otros pasivos financieros",
+        "Deudas fiscales",
+        "Deudas laborales y previsionales",
+        "Otras deudas con terceros en moneda",
+        "Subsidios y otras ayudas gubernamentales",
+        "Previsiones",
+        "Fondos con destino específico"
+      ]
+    },
+    {
+      "codigo": "EP_CFL",
+      "nombre": "Entidad Pequeña Con Fines de Lucro",
+      "estados_basicos": [
+        "Estado de Situación Patrimonial",
+        "Estado de Resultados",
+        "Estado de Evolución del Patrimonio Neto",
+        "Estado de Flujos de Efectivo"
+      ],
+      "rubros_activo_nua": [
+        "Caja y bancos",
+        "Inversiones financieras",
+        "Cuentas por cobrar a clientes en moneda",
+        "Créditos impositivos",
+        "Créditos en moneda con partes relacionadas",
+        "Otras cuentas por cobrar en moneda",
+        "Bienes de cambio",
+        "Bienes de uso",
+        "Propiedades de inversión",
+        "Activos intangibles",
+        "Participaciones en subsidiarias, asociadas y negocios conjuntos societarios"
+      ],
+      "rubros_pasivo_nua": [
+        "Proveedores de bienes y servicios",
+        "Préstamos y otros pasivos financieros",
+        "Deudas fiscales",
+        "Deudas laborales y previsionales",
+        "Deudas en especie",
+        "Deudas en moneda con partes relacionadas",
+        "Previsiones",
+        "Pasivo neto por impuesto diferido"
+      ]
+    },
+    {
+      "codigo": "EM_CFL",
+      "nombre": "Entidad Mediana Con Fines de Lucro",
+      "estados_basicos": [
+        "Estado de Situación Patrimonial",
+        "Estado de Resultados",
+        "Estado de Evolución del Patrimonio Neto",
+        "Estado de Flujos de Efectivo"
+      ]
+    },
+    {
+      "codigo": "RE_CFL",
+      "nombre": "Restantes Entidades (No Pequeñas ni Medianas) Con Fines de Lucro",
+      "estados_basicos": [
+        "Estado de Situación Patrimonial",
+        "Estado de Resultados",
+        "Estado de Evolución del Patrimonio Neto",
+        "Estado de Flujos de Efectivo"
+      ]
+    }
+  ],
+  "reclasificaciones_nua_frecuentes": [
+    {
+      "rubro_anterior": "Otros créditos (saldo de impuestos)",
+      "rubro_rt54": "Créditos impositivos",
+      "norma_ref": "RT 54 párr. 617 / Modelo CPCECABA Nota 1.1",
+      "descripcion": "Bajo RT 54, los saldos a favor impositivos (IVA, IIBB, Ganancias, percepciones) se exponen en un rubro separado denominado 'Créditos impositivos' y ya no dentro de 'Otros créditos'."
+    },
+    {
+      "rubro_anterior": "Créditos por ventas / Deudores por ventas",
+      "rubro_rt54": "Cuentas por cobrar a clientes en moneda (o Cuentas por cobrar a asociados/afiliadas en ESFL)",
+      "norma_ref": "RT 54 párr. 244-262",
+      "descripcion": "Actualización de denominación de rubro según NUA (excepto que se invoque expresamente la dispensa de Res. JG 660/2026)."
+    },
+    {
+      "rubro_anterior": "Inversiones (Corrientes)",
+      "rubro_rt54": "Inversiones financieras",
+      "norma_ref": "RT 54 párr. 218",
+      "descripcion": "Las colocaciones financieras (Plazos Fijos, FCI, Títulos) se denominan 'Inversiones financieras'."
+    },
+    {
+      "rubro_anterior": "Deudas comerciales",
+      "rubro_rt54": "Proveedores de bienes y servicios (o Deudas con proveedores de bienes y servicios)",
+      "norma_ref": "RT 54 párr. 460",
+      "descripcion": "Actualización de denominación en el Pasivo Corriente/No Corriente según modelos CPCECABA."
+    },
+    {
+      "rubro_anterior": "Remuneraciones y cargas sociales / Deudas sociales",
+      "rubro_rt54": "Deudas laborales y previsionales",
+      "norma_ref": "RT 54 párr. 460",
+      "descripcion": "En NUA el rubro se denomina 'Deudas laborales y previsionales'."
+    },
+    {
+      "rubro_anterior": "Cargas fiscales",
+      "rubro_rt54": "Deudas fiscales",
+      "norma_ref": "RT 54 párr. 460",
+      "descripcion": "En NUA el rubro impositivo del pasivo se denomina 'Deudas fiscales'."
+    }
+  ],
+  "estructura_informe_auditor_rt37_rt53": {
+    "titulo_obligatorio": "INFORME DE AUDITORÍA EMITIDO POR EL AUDITOR INDEPENDIENTE",
+    "secciones_obligatorias_en_orden": [
+      {
+        "id": "SEC_TITULO",
+        "nombre": "Título del Informe",
+        "patron": "INFORME DE AUDITOR[IÍ]A EMITIDO POR EL AUDITOR INDEPENDIENTE",
+        "obligatorio": true,
+        "orden_estricto": 1,
+        "observacion_consejo": "El título debe ser 'INFORME DE AUDITORÍA EMITIDO POR EL AUDITOR INDEPENDIENTE' conforme RT 37 (mod. RT 53)."
+      },
+      {
+        "id": "SEC_DESTINATARIO",
+        "nombre": "Destinatario, CUIT y Domicilio Legal",
+        "patron": "(Señores|A los Señores).*(CUIT|C\\.U\\.I\\.T\\.).*(Domicilio legal)",
+        "obligatorio": true,
+        "orden_estricto": 2,
+        "observacion_consejo": "Debe incluir Destinatario, CUIT y expresamente 'Domicilio legal' (para personas jurídicas) o 'Domicilio fiscal' (para personas humanas)."
+      },
+      {
+        "id": "SEC_APARTADO_AUDITORIA",
+        "nombre": "Subtítulo: Informe sobre la auditoría de los estados contables",
+        "patron": "Informe sobre la auditor[ií]a de los estados contables",
+        "obligatorio": true,
+        "orden_estricto": 3
+      },
+      {
+        "id": "SEC_OPINION",
+        "nombre": "1° Párrafo Obligatorio: Opinión",
+        "patron": "Opini[oó]n(?:\\s+con\\s+salvedades|\\s+adversa)?",
+        "obligatorio": true,
+        "orden_estricto": 4,
+        "observacion_consejo": "CRÍTICO RT 37 (mod. RT 53): El apartado 'Opinión' DEBE ubicarse al comienzo del informe, inmediatamente después de los destinatarios. Si usa el modelo anterior (Opinión al final), el CPCECABA rechaza el trámite."
+      },
+      {
+        "id": "SEC_FUNDAMENTO",
+        "nombre": "2° Párrafo Obligatorio: Fundamento de la opinión",
+        "patron": "Fundamentos? de la opini[oó]n",
+        "obligatorio": true,
+        "orden_estricto": 5,
+        "observacion_consejo": "CRÍTICO RT 37 (mod. RT 53): El apartado 'Fundamento de la opinión' DEBE ir inmediatamente después de 'Opinión', citando la Sección III.A de la RT 37, la Res. C.D. N° 46/2021 (en CABA) y la declaración de independencia según Código de Ética."
+      },
+      {
+        "id": "SEC_OTRA_INFO",
+        "nombre": "Información distinta de los estados contables (Memoria)",
+        "patron": "Informaci[oó]n distinta de los estados contables|Otra informaci[oó]n",
+        "obligatorio": false,
+        "condicion": "Obligatorio cuando la entidad presenta Memoria adjunta (Sociedades por acciones, Asociaciones Civiles, etc.)."
+      },
+      {
+        "id": "SEC_RESP_DIRECCION",
+        "nombre": "Responsabilidades de la Dirección / Administración",
+        "patron": "Responsabilidad(?:es)? de la (?:Direcci[oó]n|Administraci[oó]n|Comisi[oó]n Directiva)",
+        "obligatorio": true
+      },
+      {
+        "id": "SEC_RESP_AUDITOR",
+        "nombre": "Responsabilidades del Auditor",
+        "patron": "Responsabilidad(?:es)? del auditor en relaci[oó]n con la auditor[ií]a",
+        "obligatorio": true
+      },
+      {
+        "id": "SEC_OTROS_REQ_LEGALES",
+        "nombre": "Informe sobre otros requerimientos legales y reglamentarios",
+        "patron": "Informe sobre otros requerimientos legales y reglamentarios|Informaci[oó]n especial requerida por disposiciones legales",
+        "obligatorio": true,
+        "observacion_consejo": "Debe incluir obligatoriamente la referencia a registros contables llevados en legal forma (si aplica) y la deuda devengada y exigible/no exigible con el SIPA / ANSES (Art. 10 Ley 17.250)."
+      }
+    ]
+  },
+  "checklist_legalizaciones_cpcecaba": [
+    {
+      "codigo": "FOR-01",
+      "categoria": "Formal / Legalizaciones CPCECABA",
+      "severidad": "CRITICO",
+      "titulo": "Presencia y validación matemática de CUIT",
+      "descripcion": "La CUIT de la entidad debe figurar en Carátula y en el Informe del Auditor, coincidir exactamente entre ambos y superar el dígito verificador Módulo 11.",
+      "referencia": "Instructivo Legalizaciones Web CPCECABA"
+    },
+    {
+      "codigo": "FOR-02",
+      "categoria": "Formal / Legalizaciones CPCECABA",
+      "severidad": "CRITICO",
+      "titulo": "Consistencia de Denominación Social",
+      "descripcion": "El nombre de la entidad en la Carátula, encabezados de Estados Contables e Informe del Auditor debe coincidir sin discrepancias ni textos de plantilla residuales ('XYZ', 'Denominación de la entidad').",
+      "referencia": "Instructivo Legalizaciones Web CPCECABA"
+    },
+    {
+      "codigo": "FOR-03",
+      "categoria": "Formal / Legalizaciones CPCECABA",
+      "severidad": "CRITICO",
+      "titulo": "Domicilio Legal vs. Domicilio Fiscal",
+      "descripcion": "Para personas jurídicas (SA, SRL, SAS, Asociaciones Civiles, Fundaciones, Obras Sociales, Sindicatos) debe consignarse 'Domicilio legal' y situarse en la jurisdicción correspondiente.",
+      "referencia": "Check List Legalizaciones CPCECABA"
+    },
+    {
+      "codigo": "FOR-04",
+      "categoria": "Formal / Legalizaciones CPCECABA",
+      "severidad": "CRITICO",
+      "titulo": "Consistencia de Fecha de Cierre de Ejercicio",
+      "descripcion": "La fecha de cierre del ejercicio debe ser idéntica en Carátula, ESP, ER/ERG, EEPN, EFE, Notas, Anexos y en los párrafos de Opinión y Deuda Previsional del Informe del Auditor.",
+      "referencia": "Check List Legalizaciones CPCECABA"
+    },
+    {
+      "codigo": "FOR-05",
+      "categoria": "Formal / Legalizaciones CPCECABA",
+      "severidad": "CRITICO",
+      "titulo": "Sin marcadores de plantilla o textos en borrador",
+      "descripcion": "El documento no debe contener marcadores sin completar como 'dd/mm/aaaa', 'XX-XXXXXXXX-X', 'XYZ', 'Nota ...', 'Anexo ...' o indicaciones del modelo ('De corresponder', 'eliminar texto en rojo').",
+      "referencia": "Aclaraciones Modelos CPCECABA"
+    },
+    {
+      "codigo": "RT54-01",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "CRITICO",
+      "titulo": "Nota de Bases de Preparación (RT 54 T.O. RT 59 y Res. P. 460/2024)",
+      "descripcion": "La Nota 1.1 debe mencionar explícitamente que los EECC fueron preparados de conformidad con la RT N° 54 (T.O. RT 59) de FACPCE adoptada por la Res. P. N° 460/2024 del CPCECABA.",
+      "referencia": "RT 54 párr. 605 / Res. P. 460/2024 CPCECABA"
+    },
+    {
+      "codigo": "RT54-02",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "CRITICO",
+      "titulo": "Nota de Clasificación de la Entidad (EP / EM / RE)",
+      "descripcion": "Es obligatorio revelar en Notas en qué categoría encuadra el ente según la RT 54: Entidad Pequeña (EP), Entidad Mediana (EM) o Restante Entidad (RE).",
+      "referencia": "RT 54 párr. 6 a 14 / Modelo CPCECABA Nota 1.2"
+    },
+    {
+      "codigo": "RT54-03",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "CRITICO",
+      "titulo": "Nota de Unidad de Medida y Moneda Homogénea (Ajuste por Inflación)",
+      "descripcion": "Los encabezados de todos los estados y la Nota de Unidad de Medida deben indicar expresión en 'moneda homogénea', mencionando el uso del índice FACPCE y el porcentaje de variación anual o el proceso de reexpresión.",
+      "referencia": "RT 54 párr. 176 a 200 / Modelo CPCECABA Nota 1.3"
+    },
+    {
+      "codigo": "RT54-04",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Revelación de Simplificaciones / Dispensas utilizadas (RT 54)",
+      "descripcion": "Si la entidad utiliza dispensas (ej. EFE sintético por método directo, unificación de RFyT con RECPAM en una línea, dispensa párr. 659 o Res. JG 660/2026), debe detallarlas expresamente y advertir sobre sus limitaciones.",
+      "referencia": "Modelo CPCECABA Nota 1.3"
+    },
+    {
+      "codigo": "RT54-05",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Presencia de los 4 Estados Contables Básicos e Información Comparativa",
+      "descripcion": "Deben incluirse el Estado de Situación Patrimonial, Estado de Resultados (o Recursos y Gastos), Estado de Evolución del Patrimonio Neto y Estado de Flujos de Efectivo, con columnas comparativas.",
+      "referencia": "RT 54 párr. 55"
+    },
+    {
+      "codigo": "RT54-06",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Adecuación de Denominaciones de Rubros NUA (o Nota de Dispensa Res. 660/2026)",
+      "descripcion": "Verifica la utilización de la nomenclatura NUA ('Créditos impositivos', 'Inversiones financieras', 'Deudas laborales y previsionales', 'Deudas fiscales') o la mención de la dispensa transitoria.",
+      "referencia": "RT 54 / Res. JG 660/2026"
+    },
+    {
+      "codigo": "RT37-01",
+      "categoria": "Informe del Auditor (RT 37 mod. RT 53)",
+      "severidad": "CRITICO",
+      "titulo": "Estructura y Orden de Párrafos RT 37 (mod. RT 53)",
+      "descripcion": "El párrafo 'Opinión' debe ser el primero del informe y 'Fundamento de la opinión' el segundo. Ambos deben preceder a Responsabilidades de la Dirección y del Auditor.",
+      "referencia": "RT 37 (mod. RT 53) Sección III.A / Res. CD 46/2021"
+    },
+    {
+      "codigo": "RT37-02",
+      "categoria": "Informe del Auditor (RT 37 mod. RT 53)",
+      "severidad": "CRITICO",
+      "titulo": "Cita de Resolución CD N° 46/2021 CPCECABA y Código de Ética",
+      "descripcion": "En 'Fundamento de la opinión' y 'Responsabilidades del auditor' debe citarse la RT N° 37 de la FACPCE adoptada por la Res. C.D. N° 46/2021 del CPCECABA y la declaración de independencia según el Código de Ética del CPCECABA.",
+      "referencia": "Modelo Informe Auditoría CPCECABA"
+    },
+    {
+      "codigo": "RT37-03",
+      "categoria": "Informe del Auditor (RT 37 mod. RT 53)",
+      "severidad": "CRITICO",
+      "titulo": "Identificación completa de los Estados Auditados en 'Opinión'",
+      "descripcion": "El párrafo de Opinión debe enumerar los 4 estados básicos auditados (ESP, ER/ERG, EEPN, EFE), la fecha de cierre exacta y la referencia a Notas y Anexos.",
+      "referencia": "RT 37 Sección III.A"
+    },
+    {
+      "codigo": "RT37-04",
+      "categoria": "Informe del Auditor (RT 37 mod. RT 53)",
+      "severidad": "CRITICO",
+      "titulo": "Deuda Previsional SIPA - Ley 17.250 Art. 10",
+      "descripcion": "En 'Informe sobre otros requerimientos legales y reglamentarios' debe informarse el monto exacto de deuda devengada a favor del Sistema Integrado Previsional Argentino (SIPA) a la fecha de cierre y aclarar si era exigible o no exigible.",
+      "referencia": "Ley 17.250 Art. 10 / Check List CPCECABA"
+    },
+    {
+      "codigo": "RT37-05",
+      "categoria": "Informe del Auditor (RT 37 mod. RT 53)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Lugar, Fecha de Emisión y Datos de Matrícula del Auditor",
+      "descripcion": "El informe debe cerrar con 'Ciudad Autónoma de Buenos Aires', fecha de emisión igual o posterior al cierre, nombre del Contador Público, Universidad y Tomo/Folio de matrícula C.P.C.E.C.A.B.A.",
+      "referencia": "Check List Legalizaciones CPCECABA"
+    },
+    {
+      "codigo": "NUM-01",
+      "categoria": "Consistencia Aritmética y Cuadratura",
+      "severidad": "CRITICO",
+      "titulo": "Ecuación Patrimonial en el ESP (Activo = Pasivo + Patrimonio Neto)",
+      "descripcion": "Verifica que Activo Corriente + Activo No Corriente = Total Activo, Pasivo Corriente + Pasivo No Corriente = Total Pasivo, y Total Activo = Total Pasivo + Patrimonio Neto (tanto en ejercicio actual como comparativo).",
+      "referencia": "Control Aritmético Básico"
+    },
+    {
+      "codigo": "NUM-02",
+      "categoria": "Consistencia Aritmética y Cuadratura",
+      "severidad": "CRITICO",
+      "titulo": "Cruce del Patrimonio Neto entre ESP y EEPN",
+      "descripcion": "El Patrimonio Neto expuesto en el Estado de Situación Patrimonial debe coincidir al centavo con el Saldo al Cierre del Estado de Evolución del Patrimonio Neto (actual y comparativo).",
+      "referencia": "Cruce de Estados Básicos"
+    },
+    {
+      "codigo": "NUM-03",
+      "categoria": "Consistencia Aritmética y Cuadratura",
+      "severidad": "CRITICO",
+      "titulo": "Cruce del Resultado / Superávit del Ejercicio entre ER/ERG y EEPN",
+      "descripcion": "El Resultado (Ganancia/Pérdida o Superávit/Déficit) del ejercicio determinado en el Estado de Resultados / Recursos y Gastos debe coincidir exactamente con el incorporado en el EEPN.",
+      "referencia": "Cruce de Estados Básicos"
+    },
+    {
+      "codigo": "NUM-04",
+      "categoria": "Consistencia Aritmética y Cuadratura",
+      "severidad": "CRITICO",
+      "titulo": "Cuadratura del Estado de Flujos de Efectivo (EFE) y cruce con Caja y Bancos",
+      "descripcion": "La variación neta del efectivo (Efectivo al cierre menos Efectivo al inicio) debe igualar la suma de los flujos de actividades operativas, de inversión y de financiación, y cruzar con Caja y Bancos (+ equivalentes).",
+      "referencia": "RT 54 párr. 652-672"
+    },
+    {
+      "codigo": "RT54-07",
+      "categoria": "Exposición y Síntesis Normativa RT 54 (NUA)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Supresión obligatoria de Rubros, Filas, Columnas y Notas con Saldo Cero en ambos ejercicios",
+      "descripcion": "Los rubros, filas del EEPN, actividades del EFE, notas de políticas contables y anexos que no tengan saldo en el ejercicio actual ni en el comparativo DEBEN ELIMINARSE (principio de síntesis y flexibilidad, RT 54 párr. 55 y 56 inc. a y Nota (1) de todos los modelos CPCECABA).",
+      "referencia": "RT 54 párr. 55-56 / Modelos CPCECABA Nota (1)"
+    },
+    {
+      "codigo": "RT54-08",
+      "categoria": "Exposición de Previsiones y Anexo de Previsiones (RT 54)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Estructura del Anexo de Previsiones (Deducidas del Activo vs. Incluidas en el Pasivo), RECPAM y Criterio de Medición",
+      "descripcion": "El Anexo de Previsiones debe separar 'Deducidas del Activo' (Corrientes y No Corrientes, que restan de su rubro en el ESP) e 'Incluidas en el Pasivo' (Corrientes y No Corrientes, rubro Previsiones del Pasivo). El RECPAM de los saldos puede exponerse en la columna 'Otros' de Aumentos o Disminuciones. En EP se miden a valor nominal y en RE a valor descontado.",
+      "referencia": "RT 54 párr. 316, 483-500 / Modelos CPCECABA Anexo Previsiones y Notas 2.13/2.15"
+    },
+    {
+      "codigo": "RT54-09",
+      "categoria": "Exposición del Cuadro / Anexo de Gastos (RT 54 y Art. 64 LGS)",
+      "severidad": "CRITICO",
+      "titulo": "Cuadro / Anexo de Gastos por Naturaleza y Función y Cruce con Estado de Resultados / Recursos y Gastos",
+      "descripcion": "En entidades con fines de lucro (Art. 64 inc. b Ley 19.550 y RT 54 párr. 638) debe exponerse la matriz por naturaleza distribuida en Costo de producción, Costo prestación de servicios, Gastos de comercialización y Gastos de administración. En ESFL (RT 54 párr. 727) se distribuye en Gastos de producción, Gastos para fines generales, Gastos para fines específicos y Gastos generales de administración (pudiendo desdoblarse en anexos individuales). Los totales de cada columna deben cruzar exactamente con el ER/ERG.",
+      "referencia": "RT 54 párr. 638 y 727 / Ley 19.550 Art. 64 inc. b) / Modelos CPCECABA"
+    },
+    {
+      "codigo": "RT54-10",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "CRITICO",
+      "titulo": "Prohibición de EFE Sintético en Entidades Sin Fines de Lucro y Cooperativas (RT 54 párr. 666)",
+      "descripcion": "El párrafo 666 de la RT 54 prohíbe expresamente a las Entidades Sin Fines de Lucro y a las Cooperativas presentar el Estado de Flujos de Efectivo en forma sintética; deben exponerlo de manera abierta por el método directo.",
+      "referencia": "RT 54 párr. 666 / Modelo CPCECABA Hoja 4-EFE Nota (2)"
+    },
+    {
+      "codigo": "RT54-11",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Conciliación entre el Efectivo del EFE y las partidas del ESP (RT 54 párr. 672 inc. a)",
+      "descripcion": "Debe incluirse la conciliación entre el Efectivo y sus equivalentes considerado en el Estado de Flujos de Efectivo y las partidas correspondientes del Estado de Situación Patrimonial (Caja y bancos más Inversiones financieras equivalentes de efectivo).",
+      "referencia": "RT 54 párr. 672 inc. a) / Modelo CPCECABA Hoja 4-EFE Nota (3)/(7)"
+    },
+    {
+      "codigo": "RT54-12",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Evaluación de Valor Recuperable de Bienes de Uso e Intangibles ante Resultados Negativos",
+      "descripcion": "En Entidades Pequeñas, la exención de evaluar indicios de deterioro de Bienes de Uso e Intangibles sólo rige cuando el resultado de los últimos 3 ejercicios fue positivo. Si el ejercicio actual o comparativo arroja pérdida/déficit, debe dejarse constancia de la prueba de valor recuperable.",
+      "referencia": "RT 54 párr. 150-165 / Modelo CPCECABA Nota 2.9"
+    },
+    {
+      "codigo": "RT54-13",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Consistencia de Primera Aplicación de RT 54 (Cuadro de Conciliación del PN o Declaración Sin Efectos)",
+      "descripcion": "En el primer ejercicio de aplicación de la RT 54 debe indicarse si hubo cambios de medición (incluyendo el cuadro de conciliación del Patrimonio Neto y la línea de AREA en el EEPN) o manifestar expresamente que no generó efectos en reconocimiento ni medición salvo las denominaciones de rubros.",
+      "referencia": "RT 54 Apéndice A párr. A.2-A.17 / Modelo CPCECABA Nota 1.1"
+    },
+    {
+      "codigo": "RT54-14",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Aportes Irrevocables (RG IGJ 15/2024 Art. 240) y Llamadas de Aprobación de Asamblea en el EEPN",
+      "descripcion": "Verifica la correcta exposición de Aportes Irrevocables y su ajuste conforme RG IGJ 15/2024 Art. 240 y que las llamadas (*) y (**) al pie del EEPN identifiquen la fecha de Asamblea/Reunión de Socios que aprobó las distribuciones o capitalizaciones.",
+      "referencia": "RG IGJ 15/2024 Art. 240 / Modelo CPCECABA Hoja 3-EEPN"
+    },
+    {
+      "codigo": "RT54-15",
+      "categoria": "Normativa Contable RT 54 (NUA)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Integridad y Correlatividad de Referencias Cruzadas a Notas y Anexos (RT 54 párr. 57)",
+      "descripcion": "Verifica que no queden referencias huérfanas o sin numerar ('Nota ...', 'Anexo xx') luego de suprimir las notas y anexos con saldo cero.",
+      "referencia": "RT 54 párr. 57"
+    },
+    {
+      "codigo": "RT37-06",
+      "categoria": "Informe del Auditor (RT 37 mod. RT 53)",
+      "severidad": "CRITICO",
+      "titulo": "Control Cronológico de Fechas (Fecha del Informe del Auditor >= Fecha de Cierre y Consistencia en SIPA)",
+      "descripcion": "La fecha de emisión del Informe del Auditor debe ser igual o posterior a la fecha de cierre del ejercicio, y la fecha de cierre citada en el párrafo de Opinión debe coincidir exactamente con la citada en el párrafo de deuda previsional SIPA (Art. 10 Ley 17.250).",
+      "referencia": "Check List Legalizaciones CPCECABA / RT 37"
+    },
+    {
+      "codigo": "RT37-07",
+      "categoria": "Informe del Auditor (RT 37 mod. RT 53)",
+      "severidad": "ADVERTENCIA",
+      "titulo": "Sección de 'Otra Información (Memoria)' según Tipo Societario (RT 37 mod. RT 53)",
+      "descripcion": "En Sociedades por Acciones (SA, SAU) y Asociaciones Civiles/Fundaciones que presentan Memoria adjunta, el Informe del Auditor debe incluir el apartado 'Información distinta de los estados contables y del informe de auditoría correspondiente (Otra información)'.",
+      "referencia": "RT 37 (mod. RT 53) Sección III.A / Modelo CPCECABA"
+    },
+    {
+      "codigo": "NUM-06",
+      "categoria": "Consistencia Aritmética y Cuadratura",
+      "severidad": "CRITICO",
+      "titulo": "Cruce de Depreciaciones de Bienes de Uso entre Anexo de Bienes de Uso y Anexo de Gastos / ERG",
+      "descripcion": "Las depreciaciones del ejercicio del Anexo de Bienes de Uso deben cruzar con la fila 'Depreciación bienes de uso' del Anexo de Gastos (en sociedades) o con el renglón 'Depreciaciones de bienes de uso y amortizaciones de intangibles' del ERG (en ESFL).",
+      "referencia": "Cruce de Anexos y Estados Básicos CPCECABA"
+    },
+    {
+      "codigo": "NUM-07",
+      "categoria": "Consistencia Aritmética y Cuadratura",
+      "severidad": "CRITICO",
+      "titulo": "Cuadratura del Anexo de Costo de Bienes Vendidos / Consumidos y Cruce de Existencias con ESP",
+      "descripcion": "Verifica la ecuación (Existencia Inicial + Compras + Costo/Gastos de Producción +/- RxT - Existencia Final = Costo en ER/ERG) y que la Existencia Final e Inicial coincidan con el rubro Bienes de Cambio / Consumo del ESP (actual y comparativo).",
+      "referencia": "Cruce Anexo Costo vs. ESP y ER"
+    }
+  ]
+}
