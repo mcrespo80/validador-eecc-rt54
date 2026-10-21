@@ -14,6 +14,8 @@ uploads/*
 !uploads/.gitkeep
 reports/*
 !reports/.gitkeep
+outputs/*
+!outputs/.gitkeep
 
 # Office temporary lock files
 ~$*.docx
