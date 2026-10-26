@@ -1421,15 +1421,15 @@ def _build_micproject_pdf(
     # ==================================================================
     # PAGE 1 (PORTRAIT): BLOQUE CARÁTULA INSTITUCIONAL (MICPROJECT)
     # ==================================================================
-    story.append(Spacer(1, 4 * mm))
+    story.append(Spacer(1, 8 * mm))
     story.append(Paragraph(car["razonSocial"].upper(), ParagraphStyle("CarTitle", fontName=FONT_BOLD, fontSize=14, leading=18, alignment=TA_CENTER)))
     if car["rnos"]:
         story.append(Paragraph(f"AGENTE DEL SEGURO DE SALUD — N° RNOS: {car['rnos']}", st_sub_ita))
-    story.append(Spacer(1, 3 * mm))
+    story.append(Spacer(1, 4 * mm))
     story.append(Paragraph(f"ESTADOS CONTABLES CORRESPONDIENTES AL EJERCICIO ECONÓMICO", st_title_center))
     story.append(Paragraph(f"INICIADO EL {car['fechaInicio']} Y FINALIZADO EL {closing_date}", st_title_center))
     story.append(Paragraph(f"Comparativo con el ejercicio anterior ({comp_date}) — Expresados en moneda homogénea (RT 54 - T.O. RT 59)", st_sub_ita))
-    story.append(Spacer(1, 4 * mm))
+    story.append(Spacer(1, 6 * mm))
 
     car_rows = [
         [Paragraph("DENOMINACIÓN DE LA ENTIDAD:", st_td_bold), Paragraph(car["razonSocial"], st_td)],
@@ -1441,39 +1441,19 @@ def _build_micproject_pdf(
         [Paragraph("CARÁCTER DE LA ENTIDAD (RT 54):", st_td_bold), Paragraph(f"{car['tipoEntidad']} — {car['categoriaRt54']}", st_td)],
         [Paragraph("UNIDAD DE MEDIDA:", st_td_bold), Paragraph(car["moneda"], st_td)],
     ]
-    t_car = Table(car_rows, colWidths=[62 * mm, w_port - 62 * mm])
+    t_car = Table(car_rows, colWidths=[65 * mm, w_port - 65 * mm])
     t_car.setStyle(TableStyle([
         ("BOX", (0, 0), (-1, -1), 1.0, colors.black),
         ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#9CA3AF")),
         ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#F3F4F6")),
-        ("TOPPADDING", (0, 0), (-1, -1), 2.0 * mm),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 2.0 * mm),
-        ("LEFTPADDING", (0, 0), (-1, -1), 3 * mm),
+        ("TOPPADDING", (0, 0), (-1, -1), 3.2 * mm),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 3.2 * mm),
+        ("LEFTPADDING", (0, 0), (-1, -1), 4 * mm),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 4 * mm),
     ]))
     story.append(t_car)
     story.append(Spacer(1, 3.5 * mm))
 
-    # Executive summary table on cover page
-    story.append(Paragraph("SÍNTESIS EJECUTIVA DE CUMPLIMIENTO NORMATIVO Y HOMOLOGACIÓN", st_h2))
-    story.append(Spacer(1, 1.5 * mm))
-    exec_chg_rows = [
-        [Paragraph("Componente / Norma", st_th_left), Paragraph("Adecuación Técnica Aplicada en esta Versión Homologada", st_th_left), Paragraph("Estado", st_th)],
-        [Paragraph("Carátula y CUIT (Mód. 11)", st_td_bold), Paragraph(f"CUIT {car['cuit']} validada por AFIP/ARCA y replicada en la cabecera de todas las páginas con datos completos de inscripción.", st_td), Paragraph("<font color='#059669'><b>OK ✓</b></font>", st_th)],
-        [Paragraph("Normativa RT 54 (T.O. RT 59)", st_td_bold), Paragraph(f"Adopción plena de la NUA según Res. P. Nº 460/2024 CPCECABA, clasificación como {car['categoriaRt54']} y modelo integral de Notas 1 a 3.", st_td), Paragraph("<font color='#059669'><b>OK ✓</b></font>", st_th)],
-        [Paragraph("Unidad de Medida (RT 6)", st_td_bold), Paragraph("Expresión en moneda homogénea de poder adquisitivo de cierre con índice de precios FACPCE y presentación comparativa reexpresada.", st_td), Paragraph("<font color='#059669'><b>OK ✓</b></font>", st_th)],
-        [Paragraph("Estados y Cuadros A4", st_td_bold), Paragraph(f"ESP en doble columna, EERR, EEPN, EFE (Método Directo), {len(eecc['cuadrosNotas'])} Cuadros de Notas (5 columnas) y {len(eecc['anexos'])} Anexos con Doble Firma.", st_td), Paragraph("<font color='#059669'><b>OK ✓</b></font>", st_th)],
-        [Paragraph("Órganos de Fiscalización", st_td_bold), Paragraph("Incorporación de la Memoria, Informe preceptivo de la Comisión Revisora de Cuentas y Dictamen del Auditor bajo RT 37 mod. RT 53.", st_td), Paragraph("<font color='#059669'><b>OK ✓</b></font>", st_th)],
-    ]
-    t_exec = Table(exec_chg_rows, colWidths=[48 * mm, w_port - 64 * mm, 16 * mm])
-    t_exec.setStyle(TableStyle([
-        ("BOX", (0, 0), (-1, -1), 0.8, colors.black),
-        ("INNERGRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#9CA3AF")),
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#E5E7EB")),
-        ("TOPPADDING", (0, 0), (-1, -1), 1.5 * mm),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 1.5 * mm),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-    ]))
-    story.append(t_exec)
 
 
 
