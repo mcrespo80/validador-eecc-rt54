@@ -110,3 +110,26 @@ Ciudad Autónoma de Buenos Aires, [fecha de emisión / certificación]
 **Dr./Dra. [Nombre y Apellido del Auditor]**  
 Contador Público (Universidad)  
 C.P.C.E.C.A.B.A. T° … F° …  
+
+---
+
+## 4. ESTRUCTURA DE FIRMAS AL PIE DE LOS ESTADOS CONTABLES (OBRAS SOCIALES Y ENTIDADES CIVILES)
+
+En concordancia con los requerimientos estatutarios, reglamentarios de la Superintendencia de Servicios de Salud (SSS) y las normas de legalización profesional del CPCECABA, el pie de página de cada uno de los estados contables básicos, notas y anexos lleva el bloque tripartito de firmas:
+
+1. **Auditor Independiente / Contador Dictaminante (Izquierda)**:
+   - Leyenda reglamentaria: *"Firmado a los efectos de su identificación con mi informe de fecha [fecha de certificación].-"*
+   - Línea de firma punteada.
+   - Nombre y Apellido.
+   - *Contador Público — C.P.C.E.C.A.B.A. T° ... F° ...*
+
+2. **Tesorero / Responsable Financiero (Centro)**:
+   - Línea de firma punteada.
+   - Nombre y Apellido / Identificación estatutaria.
+   - *Tesorero — [Denominación de la Entidad / Obra Social]*
+
+3. **Presidente / Representante Legal (Derecha)**:
+   - Línea de firma punteada.
+   - Nombre y Apellido / Identificación estatutaria.
+   - *Presidente — [Denominación de la Entidad / Obra Social]*
+

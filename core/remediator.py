@@ -80,6 +80,8 @@ class MicProjectCanvas(canvas.Canvas):
         self.cert_date = kwargs.pop("cert_date", "")
         self.firmante_nombre = kwargs.pop("firmante_nombre", "PRESIDENTE / COMISIÓN DIRECTIVA")
         self.firmante_cargo = kwargs.pop("firmante_cargo", "Presidente")
+        self.tesorero_nombre = kwargs.pop("tesorero_nombre", "TESORERO / COMISIÓN DIRECTIVA")
+        self.tesorero_cargo = kwargs.pop("tesorero_cargo", "Tesorero")
         self.auditor_nombre = kwargs.pop("auditor_nombre", "Dr./Dra. Contador Público Independiente")
         self.auditor_matricula = kwargs.pop("auditor_matricula", "C.P.C.E.C.A.B.A. T° ... F° ...")
         super().__init__(*args, **kwargs)
@@ -128,7 +130,7 @@ class MicProjectCanvas(canvas.Canvas):
         self.setLineWidth(1.0)
         self.line(margin, top_y - 2 * mm, w - margin, top_y - 2 * mm)
 
-        # 2. DOBLE FIRMA EECC (MICPROJECT Style at bottom of every page)
+        # 2. FIRMA TRIPARTITA EECC (MICPROJECT Style: Auditor, Tesorero, Presidente)
         footer_top = 26 * mm
         self.setStrokeColor(colors.HexColor("#9CA3AF"))
         self.setLineWidth(0.5)
@@ -142,36 +144,55 @@ class MicProjectCanvas(canvas.Canvas):
             "Las Notas y los Anexos que se acompañan forman parte integrante de estos Estados Contables."
         )
 
-        # Left column: Auditor signature block
-        left_x = margin + 2 * mm
-        left_w = 78 * mm
-        self.setFont(FONT_ITA, 6.8)
-        self.setFillColor(colors.black)
-        self.drawString(
-            left_x,
-            footer_top - 7.5 * mm,
-            f"Firmado a los efectos de su identificación con mi informe de fecha {self.cert_date}.-"
-        )
-        # Dotted signature line for Auditor
-        sig_y = footer_top - 14.5 * mm
-        self.setDash(2, 2)
-        self.line(left_x, sig_y, left_x + left_w, sig_y)
-        self.setDash()
-        self.setFont(FONT_BOLD, 7.3)
-        self.drawCentredString(left_x + left_w / 2.0, sig_y - 3.2 * mm, self.auditor_nombre)
-        self.setFont(FONT_REG, 6.8)
-        self.drawCentredString(left_x + left_w / 2.0, sig_y - 6.2 * mm, f"Contador Público — {self.auditor_matricula}")
+        avail_footer_w = w - 2 * margin
+        gap = 5 * mm
+        col_w = (avail_footer_w - 2 * gap) / 3.0
 
-        # Right column: Presidente / Entidad signature block
-        right_w = 78 * mm
-        right_x = w - margin - right_w - 2 * mm
+        c1_x = margin
+        c2_x = margin + col_w + gap
+        c3_x = margin + 2 * (col_w + gap)
+        sig_y = footer_top - 14.5 * mm
+
+        # Col 1: Auditor signature block
+        self.setFont(FONT_ITA, 6.0)
+        self.setFillColor(colors.black)
+        cert_txt = f"Firmado a los efectos de su identificación con mi informe de fecha {self.cert_date}.-"
+        if self.stringWidth(cert_txt, FONT_ITA, 6.0) > col_w:
+            self.drawCentredString(c1_x + col_w / 2.0, footer_top - 6.5 * mm, "Firmado a los efectos de su identificación")
+            self.drawCentredString(c1_x + col_w / 2.0, footer_top - 9.5 * mm, f"con mi informe de fecha {self.cert_date}.-")
+        else:
+            self.drawCentredString(c1_x + col_w / 2.0, footer_top - 7.5 * mm, cert_txt)
+
+        # Dotted signature lines
         self.setDash(2, 2)
-        self.line(right_x, sig_y, right_x + right_w, sig_y)
+        self.line(c1_x, sig_y, c1_x + col_w, sig_y)
+        self.line(c2_x, sig_y, c2_x + col_w, sig_y)
+        self.line(c3_x, sig_y, c3_x + col_w, sig_y)
         self.setDash()
-        self.setFont(FONT_BOLD, 7.3)
-        self.drawCentredString(right_x + right_w / 2.0, sig_y - 3.2 * mm, self.firmante_nombre)
-        self.setFont(FONT_REG, 6.8)
-        self.drawCentredString(right_x + right_w / 2.0, sig_y - 6.2 * mm, f"{self.firmante_cargo} — {self.entity_name[:42]}")
+
+        # Under Auditor line
+        self.setFont(FONT_BOLD, 7.0)
+        self.drawCentredString(c1_x + col_w / 2.0, sig_y - 3.2 * mm, self.auditor_nombre)
+        self.setFont(FONT_REG, 6.0)
+        self.drawCentredString(c1_x + col_w / 2.0, sig_y - 6.2 * mm, f"Contador Público — {self.auditor_matricula}")
+
+        # Under Tesorero line
+        self.setFont(FONT_BOLD, 7.0)
+        self.drawCentredString(c2_x + col_w / 2.0, sig_y - 3.2 * mm, self.tesorero_nombre)
+        self.setFont(FONT_REG, 6.0)
+        cargo_tes = f"{self.tesorero_cargo} — {self.entity_name}"
+        if len(cargo_tes) > 34:
+            cargo_tes = f"{self.tesorero_cargo} — {self.entity_name[:31]}..."
+        self.drawCentredString(c2_x + col_w / 2.0, sig_y - 6.2 * mm, cargo_tes)
+
+        # Under Presidente line
+        self.setFont(FONT_BOLD, 7.0)
+        self.drawCentredString(c3_x + col_w / 2.0, sig_y - 3.2 * mm, self.firmante_nombre)
+        self.setFont(FONT_REG, 6.0)
+        cargo_pres = f"{self.firmante_cargo} — {self.entity_name}"
+        if len(cargo_pres) > 34:
+            cargo_pres = f"{self.firmante_cargo} — {self.entity_name[:31]}..."
+        self.drawCentredString(c3_x + col_w / 2.0, sig_y - 6.2 * mm, cargo_pres)
 
         self.restoreState()
 
@@ -938,6 +959,42 @@ def _parse_eecc_structured_data(
         f"EL ÓRGANO DE ADMINISTRACIÓN"
     )
 
+    # Extract potential firmantes from document text if present
+    detected_presidente = None
+    detected_tesorero = None
+    detected_auditor = None
+    detected_matricula = None
+
+    for p in pages:
+        p_lines = [l.strip() for l in p.get("text", "").splitlines() if l.strip()]
+        for i, l in enumerate(p_lines):
+            l_up = l.upper()
+            if ("TESORERO" in l_up or "TESORERA" in l_up) and not detected_tesorero:
+                if ":" in l:
+                    cand = l.split(":", 1)[1].strip()
+                    if 3 < len(cand) < 50:
+                        detected_tesorero = cand
+                elif i > 0:
+                    prev = p_lines[i-1].strip()
+                    if 3 < len(prev) < 50 and not any(k in prev.upper() for k in ["NOTAS", "ANEXO", "ESTADO", "HOJA", "PÁGINA", "CUENTA", "ACTIVO", "PASIVO", "---", "..."]):
+                        detected_tesorero = prev
+            if ("PRESIDENTE" in l_up or "PRESIDENTA" in l_up) and "REVISORA" not in l_up and not detected_presidente:
+                if ":" in l:
+                    cand = l.split(":", 1)[1].strip()
+                    if 3 < len(cand) < 50:
+                        detected_presidente = cand
+                elif i > 0:
+                    prev = p_lines[i-1].strip()
+                    if 3 < len(prev) < 50 and not any(k in prev.upper() for k in ["NOTAS", "ANEXO", "ESTADO", "HOJA", "PÁGINA", "CUENTA", "ACTIVO", "PASIVO", "---", "..."]):
+                        detected_presidente = prev
+            if ("CONTADOR" in l_up or "AUDITOR" in l_up) and ("PÚBLICO" in l_up or "INDEPENDIENTE" in l_up or "DICTAMINANTE" in l_up) and not detected_auditor:
+                if i > 0:
+                    prev = p_lines[i-1].strip()
+                    if 3 < len(prev) < 50 and not any(k in prev.upper() for k in ["NOTAS", "ANEXO", "ESTADO", "HOJA", "PÁGINA", "INFORME", "---", "..."]):
+                        detected_auditor = prev
+            if "C.P.C.E" in l_up and not detected_matricula:
+                detected_matricula = l.strip()
+
     return {
         "caratulaData": {
             "razonSocial": entity_name,
@@ -950,10 +1007,12 @@ def _parse_eecc_structured_data(
             "tipoEntidad": meta.get("tipo_ente", ""),
             "categoriaRt54": cat_rt54,
             "moneda": "Moneda homogénea de poder adquisitivo de cierre (RT 54 - Nota 1.3)",
-            "firmanteNombre": "CONSEJO DIRECTIVO / PRESIDENTE",
+            "firmanteNombre": detected_presidente or "CONSEJO DIRECTIVO / PRESIDENTE",
             "firmanteCargo": "Presidente",
-            "auditorNombre": "Dr./Dra. [Contador Público Independiente]",
-            "auditorMatricula": "C.P.C.E.C.A.B.A. T° ... F° ...",
+            "tesoreroNombre": detected_tesorero or "CONSEJO DIRECTIVO / TESORERO",
+            "tesoreroCargo": "Tesorero",
+            "auditorNombre": detected_auditor or "Dr./Dra. [Contador Público Independiente]",
+            "auditorMatricula": detected_matricula or "C.P.C.E.C.A.B.A. T° ... F° ...",
             "fechaCertificacion": cert_date
         },
         "memoriaTexto": memoria_default_texto,
@@ -1231,6 +1290,10 @@ def generate_improved_eecc_package(
             eecc_structured["caratulaData"]["firmanteNombre"] = custom_overrides["firmanteNombre"].strip()
         if custom_overrides.get("firmanteCargo"):
             eecc_structured["caratulaData"]["firmanteCargo"] = custom_overrides["firmanteCargo"].strip()
+        if custom_overrides.get("tesoreroNombre"):
+            eecc_structured["caratulaData"]["tesoreroNombre"] = custom_overrides["tesoreroNombre"].strip()
+        if custom_overrides.get("tesoreroCargo"):
+            eecc_structured["caratulaData"]["tesoreroCargo"] = custom_overrides["tesoreroCargo"].strip()
         if custom_overrides.get("auditorNombre"):
             eecc_structured["caratulaData"]["auditorNombre"] = custom_overrides["auditorNombre"].strip()
         if custom_overrides.get("auditorMatricula"):
@@ -2027,6 +2090,8 @@ def _build_micproject_pdf(
             cert_date=car["fechaCertificacion"],
             firmante_nombre=car["firmanteNombre"],
             firmante_cargo=car["firmanteCargo"],
+            tesorero_nombre=car.get("tesoreroNombre", "TESORERO / COMISIÓN DIRECTIVA"),
+            tesorero_cargo=car.get("tesoreroCargo", "Tesorero"),
             auditor_nombre=car["auditorNombre"],
             auditor_matricula=car["auditorMatricula"],
             **kwargs
@@ -2123,7 +2188,7 @@ def _add_docx_header_and_signatures(doc_obj: docx.Document, section_title: str, 
 
 
 def _add_docx_doble_firma(doc_obj: docx.Document, car: Dict[str, Any]):
-    """Adds MICPROJECT DobleFirmaEECC at bottom of section with centered alignment"""
+    """Adds MICPROJECT Triple Firma EECC (Auditor, Tesorero, Presidente) at bottom of section with centered alignment"""
     p_fn = doc_obj.add_paragraph()
     p_fn.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_fn.paragraph_format.space_before = Pt(6)
@@ -2133,21 +2198,35 @@ def _add_docx_doble_firma(doc_obj: docx.Document, car: Dict[str, Any]):
     r_fn.font.name = "Arial"
     r_fn.font.size = Pt(7.5)
 
-    t_sig = doc_obj.add_table(rows=1, cols=2)
+    t_sig = doc_obj.add_table(rows=1, cols=3)
     t_sig.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    tesorero_nom = car.get("tesoreroNombre") or "CONSEJO DIRECTIVO / TESORERO"
+    tesorero_car = car.get("tesoreroCargo") or "Tesorero"
+
+    # Col 0: Auditor Independiente
     _style_docx_cell(
         t_sig.cell(0, 0),
         f"Firmado a los efectos de su identificación con mi informe de fecha {car['fechaCertificacion']}.-\n\n\n............................................................\n{car['auditorNombre']}\nContador Público — {car['auditorMatricula']}",
         bold=False,
         align=WD_ALIGN_PARAGRAPH.CENTER,
-        font_size_pt=7.5
+        font_size_pt=7.0
     )
+    # Col 1: Tesorero
     _style_docx_cell(
         t_sig.cell(0, 1),
-        f"\n\n\n............................................................\n{car['firmanteNombre']}\n{car['firmanteCargo']} — {car['razonSocial'][:45]}",
+        f"\n\n\n............................................................\n{tesorero_nom}\n{tesorero_car} — {car['razonSocial'][:36]}",
         bold=False,
         align=WD_ALIGN_PARAGRAPH.CENTER,
-        font_size_pt=7.5
+        font_size_pt=7.0
+    )
+    # Col 2: Presidente
+    _style_docx_cell(
+        t_sig.cell(0, 2),
+        f"\n\n\n............................................................\n{car['firmanteNombre']}\n{car['firmanteCargo']} — {car['razonSocial'][:36]}",
+        bold=False,
+        align=WD_ALIGN_PARAGRAPH.CENTER,
+        font_size_pt=7.0
     )
 
 
