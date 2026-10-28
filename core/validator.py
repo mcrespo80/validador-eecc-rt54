@@ -75,7 +75,7 @@ class EECCValidator:
     """
     Comprehensive Validator for Financial Statements (EECC) under:
     - RT 54 (T.O. RT 59 - NUA)
-    - Res. P. 460/2024 CPCECABA & Res. JG 660/2026 FACPCE
+    - Res. P. 460/2024 CPCECABA
     - RT 37 (mod. RT 53) & Res. CD 46/2021 CPCECABA
     - Legalizaciones Web CPCECABA Formal Controls
     """
@@ -609,8 +609,7 @@ class EECCValidator:
                 "norm_ref": "RT 54 párr. 176 a 200"
             })
 
-        # RT54-05: Nomenclatura de Rubros NUA vs Normas Anteriores (o Dispensa Res. JG 660/2026)
-        has_dispensa_660 = bool(re.search(r"660/2026", full_text))
+        # RT54-05: Nomenclatura de Rubros NUA según Res. P. N° 460/2024 CPCECABA
         nua_terms_found = []
         for term in ["Créditos impositivos", "Inversiones financieras", "Deudas laborales y previsionales", "Deudas fiscales", "Proveedores de bienes y servicios", "Bienes para consumo o comercialización"]:
             if re.search(re.escape(term), full_text, re.IGNORECASE):
@@ -625,32 +624,22 @@ class EECCValidator:
             checks.append({
                 "code": "RT54-05",
                 "category": "2. Cumplimiento Normativo RT 54 (T.O. RT 59 - NUA)",
-                "title": "Adecuación de Denominaciones de Rubros según RT 54 (NUA)",
+                "title": "Adecuación de Denominaciones de Rubros según RT 54 (Res. P. 460/2024 CPCECABA)",
                 "status": "PASS",
                 "severity": "ADVERTENCIA",
                 "detail": f"Se utilizan las denominaciones actualizadas de la RT 54 ({', '.join(nua_terms_found[:4])}).",
-                "norm_ref": "RT 54 Capitulo 6 / Modelos CPCECABA"
+                "norm_ref": "RT 54 Capítulo 6 / Res. P. 460/2024 CPCECABA"
             })
-        elif legacy_terms_found and has_dispensa_660:
+        elif legacy_terms_found:
             checks.append({
                 "code": "RT54-05",
                 "category": "2. Cumplimiento Normativo RT 54 (T.O. RT 59 - NUA)",
-                "title": "Adecuación de Denominaciones de Rubros según RT 54 (NUA)",
-                "status": "PASS",
-                "severity": "ADVERTENCIA",
-                "detail": f"Se mantienen denominaciones anteriores ({', '.join(legacy_terms_found)}) amparadas correctamente en la dispensa transitoria de la Res. JG FACPCE N° 660/2026.",
-                "norm_ref": "Res. JG FACPCE N° 660/2026"
-            })
-        elif legacy_terms_found and not has_dispensa_660:
-            checks.append({
-                "code": "RT54-05",
-                "category": "2. Cumplimiento Normativo RT 54 (T.O. RT 59 - NUA)",
-                "title": "Adecuación de Denominaciones de Rubros según RT 54 (NUA)",
+                "title": "Adecuación de Denominaciones de Rubros según RT 54 (Res. P. 460/2024 CPCECABA)",
                 "status": "WARNING",
                 "severity": "ADVERTENCIA",
-                "detail": f"Se detectaron nombres de rubros del régimen anterior ({', '.join(legacy_terms_found)}) sin invocar la dispensa transitoria de primera aplicación.",
-                "recommendation": "Reclasificar a la nomenclatura NUA ('Créditos impositivos', 'Cuentas por cobrar a clientes en moneda', 'Proveedores de bienes y servicios', 'Deudas laborales y previsionales', 'Deudas fiscales') o dejar constancia en Nota 1.1 del uso de la dispensa de exposición de la Res. JG 660/2026.",
-                "norm_ref": "RT 54 / Modelo CPCECABA Nota 1.1 / Res. JG 660/2026"
+                "detail": f"Se detectaron denominaciones de regímenes anteriores ({', '.join(legacy_terms_found)}). En CABA rige la adopción de la RT 54 por Res. P. N° 460/2024 del CPCECABA.",
+                "recommendation": "Reclasificar a la nomenclatura oficial de la RT 54 ('Créditos impositivos', 'Cuentas por cobrar a clientes en moneda', 'Proveedores de bienes y servicios', 'Deudas laborales y previsionales', 'Deudas fiscales') y dejar constancia en Nota 1.1 del detalle de las reclasificaciones de presentación en el Estado de Situación Patrimonial.",
+                "norm_ref": "RT 54 / Res. P. 460/2024 CPCECABA / Modelo CPCECABA Nota 1.1"
             })
 
         # RT54-06: Nota de Primera Aplicación / Enfoque de Transición y Dispensas (Párr. 659, EFE sintético, RECPAM en 1 línea)
@@ -922,29 +911,49 @@ class EECCValidator:
                 "norm_ref": "RT 54 párr. 150-165 / Modelo CPCECABA Nota 2.9"
             })
 
-        # RT54-13: Consistencia de Primera Aplicación de RT 54 (Cuadro de Conciliación del PN vs. Declaración Sin Efectos)
+        # RT54-13: Nota de Transición en Primera Aplicación (Fecha de Aplicación, Enfoque Retroactivo y Párrafo de Cambios)
+        has_fecha_aplic = bool(re.search(r"aplicada\s+por\s+la\s+entidad\s+a\s+partir\s+del\s+(?:\d{1,2}\s+de\s+[a-záéíóú]+\s+de\s+20\d\d|\d{1,2}/\d{1,2}/20\d\d)", full_text, re.IGNORECASE))
+        has_enfoque_retro = bool(re.search(r"enfoque\s+retroactivo\s+simplificado|readecuando\s+las\s+cifras\s+comparativas", full_text, re.IGNORECASE))
+        has_sin_efectos_rt54 = bool(re.search(r"sin\s+generar\s+efectos\s+en\s+el\s+reconocimiento|sin\s+generar\s+efectos\s+en\s+la\s+medici[oó]n", full_text, re.IGNORECASE))
         has_concil_pn_rt54 = bool(re.search(r"Patrimonio\s+Neto\s+seg[uú]n\s+Normas\s+anteriores|Modificaciones?\s+de\s+resultados\s+de\s+ejercicios\s+anteriores", full_text, re.IGNORECASE))
-        has_sin_efectos_rt54 = bool(re.search(r"sin\s+generar\s+efectos\s+en\s+el\s+reconocimiento,\s+medici[oó]n", full_text, re.IGNORECASE))
-        if has_concil_pn_rt54 or has_sin_efectos_rt54:
+        has_reclasif_esp = bool(re.search(r"reclasificaci[oó]n|reclasific[oó]|Cr[eé]ditos\s+impositivos.*Otros\s+cr[eé]ditos", full_text, re.IGNORECASE))
+
+        if has_fecha_aplic and has_enfoque_retro and (has_sin_efectos_rt54 or has_concil_pn_rt54):
             checks.append({
                 "code": "RT54-13",
                 "category": "2. Cumplimiento Normativo RT 54 (T.O. RT 59 - NUA)",
-                "title": "Nota de Transición en Primera Aplicación de la RT 54 (Conciliación del PN o Sin Efectos de Medición)",
+                "title": "Nota de Transición en Primera Aplicación: Fecha de Aplicación, Enfoque Retroactivo y Párrafo de Cambios",
                 "status": "PASS",
                 "severity": "ADVERTENCIA",
-                "detail": "La Nota 1.1 cumple con el Apéndice A de la RT 54 informando el impacto de transición (cuadro de conciliación del Patrimonio Neto inicial o manifestación expresa de ausencia de efectos en reconocimiento y medición).",
-                "norm_ref": "RT 54 Apéndice A párr. A.2-A.17 / Modelo CPCECABA Nota 1.1 (Nota al pie 1)"
+                "detail": "La Nota 1.1 cumple plenamente con el modelo oficial del CPCECABA indicando la fecha de aplicación inicial, el enfoque retroactivo simplificado y el impacto en reconocimiento y medición de cifras comparativas.",
+                "norm_ref": "RT 54 Apéndice A / Modelo CPCECABA Nota 1.1"
+            })
+        elif has_enfoque_retro or has_sin_efectos_rt54 or has_concil_pn_rt54:
+            missing_parts = []
+            if not has_fecha_aplic:
+                missing_parts.append("Fecha de aplicación inicial ('a partir del dd de mm de aaaa')")
+            if not has_enfoque_retro:
+                missing_parts.append("Párrafo de cambios bajo enfoque retroactivo simplificado")
+            checks.append({
+                "code": "RT54-13",
+                "category": "2. Cumplimiento Normativo RT 54 (T.O. RT 59 - NUA)",
+                "title": "Nota de Transición en Primera Aplicación: Fecha de Aplicación y Párrafo de Cambios",
+                "status": "WARNING",
+                "severity": "ADVERTENCIA",
+                "detail": f"La Nota 1.1 omite elementos requeridos por el modelo oficial del CPCECABA: {', '.join(missing_parts)}.",
+                "recommendation": "Completar en Nota 1.1 la fecha exacta de aplicación: 'Esta resolución fue aplicada por la entidad a partir del [dd de mm de aaaa], utilizando el enfoque retroactivo simplificado, por lo que la entidad ha aplicado los cambios de la norma retroactivamente sólo readecuando las cifras comparativas...'.",
+                "norm_ref": "Modelo CPCECABA Nota 1.1 / RT 54 Apéndice A"
             })
         else:
             checks.append({
                 "code": "RT54-13",
                 "category": "2. Cumplimiento Normativo RT 54 (T.O. RT 59 - NUA)",
-                "title": "Nota de Transición en Primera Aplicación de la RT 54 (Conciliación del PN o Sin Efectos de Medición)",
+                "title": "Nota de Transición en Primera Aplicación: Fecha de Aplicación y Párrafo de Cambios",
                 "status": "WARNING",
                 "severity": "ADVERTENCIA",
-                "detail": "No se especificó en Nota 1.1 si la primera aplicación de la RT 54 originó ajustes de medición en los saldos iniciales (Tabla de conciliación del PN) o si no generó efectos de medición.",
-                "recommendation": "Si la adopción de la RT 54 no alteró la medición de activos/pasivos, incluir la cláusula oficial del CPCECABA: 'Esta resolución fue aplicada por la entidad sin generar efectos en el reconocimiento, medición y presentación, excepto por las modificaciones en las denominaciones de ciertos rubros'.",
-                "norm_ref": "RT 54 Apéndice A / Modelo CPCECABA Nota 1.1"
+                "detail": "No se detectó en Nota 1.1 la mención expresa a la fecha de primera aplicación, el enfoque retroactivo simplificado ni la declaración de efectos en medición o reclasificaciones de presentación.",
+                "recommendation": "Incorporar en Nota 1.1 la cláusula oficial del CPCECABA con fecha de inicio, enfoque retroactivo simplificado y detalle de reclasificaciones en el ESP.",
+                "norm_ref": "Modelo CPCECABA Nota 1.1 / RT 54 Apéndice A"
             })
 
         # RT54-14: Aportes Irrevocables (RG IGJ 15/2024 Art. 240) y Llamadas de Aprobación de Asamblea en el EEPN
@@ -1261,16 +1270,33 @@ class EECCValidator:
                 "detail": "Se incluye correctamente el apartado 'Información distinta de los estados contables y del informe de auditoría correspondiente (Otra información: Memoria)'.",
                 "norm_ref": "RT 37 (mod. RT 53) Sección III.A"
             })
-        else:
+        # RT37-08: Integridad de 'Responsabilidades del auditor' según Modelo Oficial CPCECABA (Res. CD 46/2021)
+        has_resp_aud_header = bool(re.search(r"Responsabilidades?\s+del\s+auditor\s+en\s+relaci[oó]n\s+con\s+la\s+auditor[ií]a", aud_text, re.IGNORECASE))
+        has_seguridad_razonable = bool(re.search(r"seguridad\s+razonable", aud_text, re.IGNORECASE))
+        has_escepticismo = bool(re.search(r"escepticismo\s+profesional|juicio\s+profesional", aud_text, re.IGNORECASE))
+        has_riesgos_fraude = bool(re.search(r"riesgos\s+de\s+incorrecci[oó]n\s+significativa.*fraude\s+o\s+error|fraude\s+o\s+error", aud_text, re.IGNORECASE))
+        has_control_interno_proc = bool(re.search(r"conocimiento\s+del\s+control\s+interno", aud_text, re.IGNORECASE))
+
+        if has_resp_aud_header and has_seguridad_razonable and has_escepticismo and has_riesgos_fraude:
             checks.append({
-                "code": "RT37-07",
+                "code": "RT37-08",
                 "category": "3. Informe del Auditor Independiente (RT 37 mod. RT 53)",
-                "title": "Adecuación de Sección 'Otra Información (Memoria)' según Tipo de Entidad",
-                "status": "INFO",
-                "severity": "INFO",
-                "detail": "No se incluye el apartado 'Otra información (Memoria)' (correcto si la entidad no acompaña Memoria adjunta; obligatorio si es S.A. o Asociación Civil que presenta Memoria).",
-                "recommendation": "Si los Estados Contables se presentan acompañados por la Memoria del órgano de administración, incorporar el párrafo de 'Información distinta de los estados contables (Otra información)'.",
-                "norm_ref": "RT 37 (mod. RT 53) Sección III.A"
+                "title": "Integridad de la Sección 'Responsabilidades del Auditor' (Modelo Res. CD 46/2021 CPCECABA)",
+                "status": "PASS",
+                "severity": "CRITICO",
+                "detail": "La sección de Responsabilidades del Auditor cumple con la redacción completa exigida por la RT 37 (mod. RT 53) del CPCECABA, incluyendo objetivos de seguridad razonable, escepticismo profesional y descripción de procedimientos.",
+                "norm_ref": "RT 37 (mod. RT 53) Sección III.A / Res. CD N° 46/2021 CPCECABA"
+            })
+        elif has_resp_aud_header:
+            checks.append({
+                "code": "RT37-08",
+                "category": "3. Informe del Auditor Independiente (RT 37 mod. RT 53)",
+                "title": "Integridad de la Sección 'Responsabilidades del Auditor' (Modelo Res. CD 46/2021 CPCECABA)",
+                "status": "WARNING",
+                "severity": "ADVERTENCIA",
+                "detail": "El párrafo de 'Responsabilidades del auditor' se encuentra incompleto o sintetizado, omitiendo la descripción detallada de objetivos (seguridad razonable, fraude/error, escepticismo profesional) y procedimientos requeridos por el modelo oficial del CPCECABA.",
+                "recommendation": "Adoptar el texto completo oficial de la Res. CD N° 46/2021 del CPCECABA con los incisos a) a f) de procedimientos y evaluación de empresa en funcionamiento.",
+                "norm_ref": "Modelo CPCECABA Res. CD N° 46/2021"
             })
 
     # ======================================================================

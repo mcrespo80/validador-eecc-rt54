@@ -376,16 +376,29 @@ def generate_tailored_notes_package(
     # Detect the exact rubros used in the user's balance
     active_rubros = detect_active_rubros_from_balance(lines, full_text)
 
-    # Check if user's balance uses legacy rubric names (so we include the Res. JG 660/2026 protection clause automatically)
-    uses_legacy_names = any(
-        any(w in r["exact_name_in_balance"].lower() for w in ["créditos por ventas", "deudores por ventas", "deudas comerciales", "remuneraciones y cargas", "cargas fiscales", "otros créditos"])
-        for r in active_rubros
-    )
+    # Format fecha de inicio del ejercicio in words (e.g. "01 de julio de 2025")
+    m_ini = re.search(r"iniciado\s+el\s+(\d{1,2}[/-]\d{1,2}[/-]20\d\d)", full_text, re.IGNORECASE)
+    if m_ini:
+        fecha_inicio_raw = m_ini.group(1).replace("-", "/")
+    else:
+        c_parts = closing_date.split("/")
+        if len(c_parts) == 3:
+            cd, cm, cy = int(c_parts[0]), int(c_parts[1]), int(c_parts[2])
+            if cm == 12 and cd == 31:
+                fecha_inicio_raw = f"01/01/{cy}"
+            elif cm == 6 and cd == 30:
+                fecha_inicio_raw = f"01/07/{cy - 1}"
+            else:
+                fecha_inicio_raw = f"01/{((cm % 12) + 1):02d}/{cy - 1 if cm != 12 else cy}"
+        else:
+            fecha_inicio_raw = "01/07/2025"
 
-    dispensa_660_clause = (
-        " Asimismo, en lo relativo a la denominación y apertura de ciertos rubros de los estados básicos y cuadros de composición de activo y pasivo, la Entidad ha hecho uso de las dispensas transitorias de exposición para primera aplicación admitidas por la Resolución JG N° 660/2026 de la FACPCE y el CPCECABA."
-        if uses_legacy_names else ""
-    )
+    months_sp = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+    parts_ini = fecha_inicio_raw.split("/")
+    if len(parts_ini) == 3 and 1 <= int(parts_ini[1]) <= 12:
+        fecha_inicio_txt = f"{int(parts_ini[0]):02d} de {months_sp[int(parts_ini[1]) - 1]} de {parts_ini[2]}"
+    else:
+        fecha_inicio_txt = fecha_inicio_raw
 
     efe_clause = (
         "• El Estado de Flujos de Efectivo ha sido preparado por el método directo en forma abierta (conforme al párrafo 666 de la RT 54 aplicable a entidades sin fines de lucro)."
@@ -400,16 +413,23 @@ def generate_tailored_notes_package(
     else:
         caja_concil_str = f"concilia directamente con el rubro 'Caja y bancos' del Estado de Situación Patrimonial (Ejercicio Actual: {caja_act} | Ejercicio Comparativo: {caja_cmp})."
 
-    # Build Section 1: NOTA 1 - BASES DE PREPARACIÓN (Modelos Oficiales CPCECABA)
+    # Build Section 1: NOTA 1 - BASES DE PREPARACIÓN (Modelo Oficial CPCECABA - Res. P. 460/2024)
     nota_1_items = [
         {
-            "sub": "1.1. Normas contables aplicadas y Primera Aplicación de la RT 54 (T.O. RT 59)",
+            "sub": "1.1. Bases de preparación de los estados contables",
             "text": (
                 f"Los presentes estados contables están expresados en pesos en moneda homogénea de cierre (Nota 1.3) y han sido preparados de conformidad con la "
-                f"Resolución Técnica N° 54 - Texto Ordenado RT 59 (RT 54 - Norma Unificada Argentina de Contabilidad), emitida por la Federación Argentina de Consejos Profesionales de Ciencias Económicas (FACPCE) "
-                f"y adoptada por la Resolución P. N° 460/2024 del Consejo Profesional de Ciencias Económicas de la Ciudad Autónoma de Buenos Aires (CPCECABA).\n"
-                f"Esta resolución fue aplicada por la Entidad utilizando el enfoque retroactivo simplificado, sin generar efectos en el reconocimiento ni en la medición contable de los saldos iniciales del patrimonio neto, "
-                f"excepto por las adecuaciones de exposición correspondientes.{dispensa_660_clause}"
+                f"Resolución Técnica N° 54 - T.O. RT 59 -, (RT 54), emitida por la Federación Argentina de Consejos Profesionales de Ciencias Económicas (FACPCE), "
+                f"adoptada por la Resolución P. N° 460/2024 del Consejo Profesional de Ciencias Económicas de la Ciudad Autónoma de Buenos Aires (CPCECABA).\n\n"
+                f"Esta resolución fue aplicada por la entidad a partir del {fecha_inicio_txt}, utilizando el enfoque retroactivo simplificado, "
+                f"por lo que la entidad ha aplicado los cambios de la norma retroactivamente sólo readecuando las cifras comparativas incluidas en el estado de situación patrimonial y notas y anexos relacionados.\n\n"
+                f"Esta resolución fue aplicada por la entidad sin generar efectos en el reconocimiento y medición de los activos, pasivos y patrimonio neto, "
+                f"excepto por las adecuaciones en las denominaciones y exposición de ciertos rubros.\n\n"
+                f"Adicionalmente, se detallan las principales reclasificaciones de presentación originadas por la aplicación de la RT 54 en el Estado de situación patrimonial:\n"
+                f"a) El saldo correspondiente a créditos impositivos que se presentaba en el rubro 'Otros créditos' del Estado de situación patrimonial, se reclasificó al rubro 'Créditos Impositivos'.\n"
+                f"b) Las deudas comerciales con proveedores de bienes y servicios se presentan bajo la denominación 'Proveedores de bienes y servicios' (o 'Deudas con proveedores de bienes y servicios').\n"
+                f"c) Las obligaciones con el personal y de la seguridad social se agrupan en el rubro 'Deudas laborales y previsionales'.\n"
+                f"d) Las colocaciones a corto plazo se exponen bajo la denominación 'Inversiones financieras'."
             )
         },
         {
@@ -561,6 +581,7 @@ def generate_tailored_notes_package(
         active_rubros=active_rubros
     )
 
+    uses_legacy_names = any(r.get("is_legacy_name", False) for r in active_rubros)
     return {
         "entity_name": entity_name,
         "cuit": cuit,

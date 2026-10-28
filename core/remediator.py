@@ -1259,12 +1259,29 @@ def generate_improved_eecc_package(
         f"2.{len(active_rubros) + 1}. Valor recuperable de activos no corrientes (RT 54 párr. 150-165): La Entidad evalúa en cada cierre la existencia de indicios de desvalorización. Al {closing_date} el valor contable reexpresado de los activos no corrientes no supera su valor recuperable."
     )
 
+    # Format fecha de inicio del ejercicio in Spanish words
+    car = eecc_structured["caratulaData"]
+    fecha_inicio_ddmmyyyy = car.get("fechaInicio") or _parse_period_dates(closing_date)[0]
+    months_sp = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+    parts_ini = fecha_inicio_ddmmyyyy.split("/")
+    if len(parts_ini) == 3 and 1 <= int(parts_ini[1]) <= 12:
+        fecha_inicio_txt = f"{int(parts_ini[0]):02d} de {months_sp[int(parts_ini[1]) - 1]} de {parts_ini[2]}"
+    else:
+        fecha_inicio_txt = fecha_inicio_ddmmyyyy
+
     rubros_names_str = ", ".join(f"«{r['exact_name_in_balance']}»" for r in active_rubros)
     notas_obligatorias = [
         {
-            "titulo": "NOTA 1. BASES DE PREPARACIÓN Y APLICACIÓN DE LA RT 54 (T.O. RT 59 - RES. P. 460/2024 CPCECABA)",
+            "titulo": "NOTA 1. BASES DE PREPARACIÓN DE LOS ESTADOS CONTABLES (RT 54 - RES. P. 460/2024 CPCECABA)",
             "parrafos": [
-                f"1.1. Normas contables aplicadas y Primera Aplicación: Los presentes estados contables de {entity_name} correspondientes al ejercicio finalizado el {closing_date} han sido preparados de conformidad con la Resolución Técnica N° 54 - Texto Ordenado RT 59 (Norma Unificada Argentina de Contabilidad - NUA) de la FACPCE, adoptada por el CPCECABA mediante la Resolución P. N° 460/2024 (y dispensas de exposición de la Res. JG N° 660/2026), utilizando el enfoque retroactivo simplificado sin generar efectos en la medición del patrimonio neto inicial.",
+                f"1.1. Bases de preparación de los estados contables: Los presentes estados contables están expresados en pesos en moneda homogénea de cierre (Nota 1.3) y han sido preparados de conformidad con la Resolución Técnica N° 54 - T.O. RT 59 -, (RT 54), emitida por la Federación Argentina de Consejos Profesionales de Ciencias Económicas (FACPCE), adoptada por la Resolución P. N° 460/2024 del Consejo Profesional de Ciencias Económicas de la Ciudad Autónoma de Buenos Aires (CPCECABA).\n\n"
+                f"Esta resolución fue aplicada por la entidad a partir del {fecha_inicio_txt}, utilizando el enfoque retroactivo simplificado, por lo que la entidad ha aplicado los cambios de la norma retroactivamente sólo readecuando las cifras comparativas incluidas en el estado de situación patrimonial y notas y anexos relacionados.\n\n"
+                f"Esta resolución fue aplicada por la entidad sin generar efectos en el reconocimiento y medición de los activos, pasivos y patrimonio neto, excepto por las adecuaciones en las denominaciones y exposición de ciertos rubros.\n\n"
+                f"Adicionalmente, se detallan las principales reclasificaciones de presentación originadas por la aplicación de la RT 54 en el Estado de situación patrimonial:\n"
+                f"a) El saldo correspondiente a créditos impositivos que se presentaba en el rubro 'Otros créditos' del Estado de situación patrimonial, se reclasificó al rubro 'Créditos Impositivos'.\n"
+                f"b) Las deudas comerciales con proveedores de bienes y servicios se presentan bajo la denominación 'Proveedores de bienes y servicios' (o 'Deudas con proveedores de bienes y servicios').\n"
+                f"c) Las obligaciones con el personal y de la seguridad social se agrupan en el rubro 'Deudas laborales y previsionales'.\n"
+                f"d) Las colocaciones a corto plazo se exponen bajo la denominación 'Inversiones financieras'.",
                 f"1.2. Clasificación de la entidad (RT 54 párr. 6 a 14): De acuerdo con los parámetros normativos vigentes, la Entidad reviste el carácter de {cat_rt54}.",
                 f"1.3. Unidad de medida (Moneda homogénea - RT 54 párr. 176 a 200): Los estados contables están expresados en pesos en moneda homogénea de poder adquisitivo de la fecha de cierre ({closing_date}), reexpresando íntegramente las cifras del ejercicio actual y del comparativo según la serie de índices publicada por la FACPCE y exponiendo en una sola línea los «Resultados financieros y por tenencia (incluyendo el RECPAM)».",
                 f"1.4. Síntesis y flexibilidad (RT 54 párr. 55-56 y 666): Se han suprimido los rubros, filas y anexos sin saldo en ambos períodos y el Estado de Flujos de Efectivo se presenta por el método directo."
@@ -1294,33 +1311,58 @@ def generate_improved_eecc_package(
         is_esfl=is_esfl
     )
 
-    # Build Auditor Report RT 37
+    # Build Auditor Report RT 37 (mod. RT 53) - Exact CPCECABA Model (Res. CD 46/2021)
     estado_resultados_nombre = "el estado de recursos y gastos" if is_esfl else "el estado de resultados"
     organo_direccion = "la Comisión Directiva / Consejo Directivo" if is_esfl else "la Dirección / Directorio"
     cert_date = eecc_structured["caratulaData"]["fechaCertificacion"]
 
+    # Calculate SIPA debt from balance
+    sipa_debt_val = None
+    pasivo_corriente_list = eecc_structured["esp"].get("pasivoCorriente", [])
+    for r in pasivo_corriente_list:
+        lbl_low = r["label"].lower()
+        if any(w in lbl_low for w in ["laboral", "previsional", "cargas sociales", "remuneraciones", "sipa"]):
+            sipa_debt_val = r["actual"]
+            break
+    if sipa_debt_val is not None and sipa_debt_val > 0:
+        sipa_amount_str = fmt_num_cell(sipa_debt_val)
+    else:
+        sipa_amount_str = "0,00"
+
     informe_auditor_parrafos = [
         ("TÍTULO OFICIAL", "INFORME DE AUDITORÍA EMITIDO POR EL AUDITOR INDEPENDIENTE"),
-        ("DESTINATARIO", f"A los Señores Miembros de {organo_direccion} de\n{entity_name}\nCUIT: {cuit}\nDomicilio legal: Ciudad Autónoma de Buenos Aires"),
+        ("DESTINATARIO", f"Señores Presidente y Directores de {entity_name}\nCUIT N°: {cuit}\nDomicilio legal: Ciudad Autónoma de Buenos Aires" if not is_esfl else f"A los Señores Miembros del Consejo Directivo de\n{entity_name}\nCUIT N°: {cuit}\nDomicilio legal: Ciudad Autónoma de Buenos Aires"),
         ("APARTADO I", "Informe sobre la auditoría de los estados contables"),
-        ("1. OPINIÓN (1° Párrafo Obligatorio RT 37 mod. RT 53)",
-         f"He auditado los estados contables adjuntos de {entity_name}, que comprenden el estado de situación patrimonial al {closing_date}, {estado_resultados_nombre}, el estado de evolución del patrimonio neto y el estado de flujos de efectivo correspondientes al ejercicio finalizado en dicha fecha, así como la información complementaria explicativa incluida en las Notas 1 a 3 y los Anexos A a E que se acompañan.\n"
-         f"En mi opinión, los estados contables adjuntos presentan razonablemente, en todos sus aspectos significativos, la situación patrimonial de {entity_name} al {closing_date}, así como sus recursos y gastos (o resultados), la evolución de su patrimonio neto y el flujo de su efectivo correspondientes al ejercicio finalizado en esa fecha, de conformidad con las normas contables profesionales argentinas (Resolución Técnica N° 54 - T.O. RT 59 de la FACPCE, adoptada por la Resolución P. N° 460/2024 del CPCECABA)."),
-        ("2. FUNDAMENTO DE LA OPINIÓN (2° Párrafo Obligatorio RT 37 mod. RT 53)",
-         "He llevado a cabo mi auditoría de conformidad con las normas de auditoría establecidas en la sección III.A de la Resolución Técnica N° 37 de la Federación Argentina de Consejos Profesionales de Ciencias Económicas (FACPCE), adoptada por la Resolución C.D. N° 46/2021 del Consejo Profesional de Ciencias Económicas de la Ciudad Autónoma de Buenos Aires (CPCECABA). Mis responsabilidades de acuerdo con dichas normas se describen más adelante en la sección «Responsabilidades del auditor en relación con la auditoría de los estados contables» de mi informe. Soy independiente de la Entidad y he cumplido las demás responsabilidades de ética de conformidad con los requerimientos del Código de Ética del CPCECABA y de la Resolución Técnica N° 37 de la FACPCE. Considero que los elementos de juicio que he obtenido proporcionan una base suficiente y adecuada para mi opinión."),
-        ("3. INFORMACIÓN DISTINTA DE LOS ESTADOS CONTABLES Y DEL INFORME DE AUDITORÍA CORRESPONDIENTE (OTRA INFORMACIÓN - MEMORIA)",
-         f"{organo_direccion.capitalize()} es responsable de la otra información, que comprende la Memoria adjunta a los estados contables. Esta otra información no es parte de los estados contables ni de mi informe de auditoría correspondiente. Mi opinión sobre los estados contables no cubre la otra información y, por lo tanto, no expreso ninguna forma de conclusión que proporcione un grado de seguridad sobre ésta. En relación con mi auditoría de los estados contables, mi responsabilidad es leer la otra información y considerar si existe una incongruencia significativa entre la otra información y los estados contables. No tengo nada que informar al respecto."),
-        ("4. RESPONSABILIDADES DE LA DIRECCIÓN EN RELACIÓN CON LOS ESTADOS CONTABLES",
-         f"{organo_direccion.capitalize()} es responsable de la preparación y presentación razonable de los estados contables adjuntos de conformidad con las normas contables profesionales argentinas (RT N° 54 - T.O. RT 59), y del control interno que considere necesario para permitir la preparación de estados contables libres de incorrección significativa, debida a fraude o error. En la preparación de los estados contables, la Dirección es responsable de la evaluación de la capacidad de la Entidad para continuar como empresa en funcionamiento."),
-        ("5. RESPONSABILIDADES DEL AUDITOR EN RELACIÓN CON LA AUDITORÍA DE LOS ESTADOS CONTABLES",
-         "Mis objetivos son obtener una seguridad razonable de que los estados contables en su conjunto están libres de incorrección significativa, debida a fraude o error, y emitir un informe de auditoría que contenga mi opinión. Seguridad razonable es un alto grado de seguridad, pero no garantiza que una auditoría realizada de conformidad con la Resolución Técnica N° 37 de la FACPCE siempre detecte una incorrección significativa cuando existe."),
+        ("Opinión",
+         f"He auditado los estados contables de {entity_name}, que comprenden el estado de situación patrimonial al {closing_date}, {estado_resultados_nombre}, de evolución del patrimonio neto y de flujo de efectivo correspondientes al ejercicio finalizado en dicha fecha, así como las notas explicativas de los estados contables 1 a 3 que incluyen un resumen de las políticas contables significativas, y los anexos A a E.\n\n"
+         f"En mi opinión, los estados contables adjuntos presentan razonablemente, en todos los aspectos significativos, la situación patrimonial de {entity_name} al {closing_date}, así como sus {'recursos y gastos' if is_esfl else 'resultados'}, la evolución de su patrimonio neto y el flujo de su efectivo correspondientes al ejercicio finalizado en esa fecha, de conformidad con las Normas Contables Profesionales Argentinas."),
+        ("Fundamento de la opinión",
+         f"He llevado a cabo mi auditoría de conformidad con las normas de auditoría establecidas en la sección III.A de la Resolución Técnica N° 37 de la Federación Argentina de Consejos Profesionales de Ciencias Económicas (FACPCE) adoptada por la Resolución C.D. Nº 46/2021 del Consejo Profesional de Ciencias Económicas de la Ciudad Autónoma de Buenos Aires (CPCECABA) y sus complementarias. Mis responsabilidades de acuerdo con dichas normas se describen más adelante en la sección “Responsabilidades del auditor en relación con la auditoría de los estados contables” de mi informe. Soy independiente de {entity_name} y he cumplido las demás responsabilidades de ética de conformidad con los requerimientos del Código de Ética del Consejo Profesional de Ciencias Económicas de la Ciudad Autónoma de Buenos Aires y de la Resolución Técnica N° 37 de la FACPCE adoptada por la Resolución C.D. Nº 46/2021 del CPCECABA (y sus complementarias).\n\n"
+         "Considero que los elementos de juicio que he obtenido proporcionan una base suficiente y adecuada para mi opinión."),
+        ("Información distinta de los estados contables y del informe de auditoría correspondiente (Otra información)",
+         f"La Dirección de {entity_name} es responsable de la otra información, que comprende la Memoria. Esta otra información no es parte de los estados contables ni de mi informe de auditoría correspondiente.\n\n"
+         "Mi opinión sobre los estados contables no cubre la otra información y, por lo tanto, no expreso ninguna forma de conclusión que proporcione un grado de seguridad sobre ésta.\n\n"
+         "En relación con mi auditoría de los estados contables, mi responsabilidad es leer la otra información y, al hacerlo, considerar si existe una incongruencia significativa entre la otra información y los estados contables o el conocimiento obtenido en la auditoría o si parece que existe una incorrección significativa en la otra información.\n\n"
+         "Si, basándome en el trabajo que he realizado, concluyo que existe una incorrección significativa en la otra información, estoy obligado a informar de ello. No tengo nada que informar al respecto."),
+        ("Responsabilidades de la Dirección en relación con los estados contables",
+         f"La Dirección de {entity_name} es responsable de la preparación y presentación razonable de los estados contables adjuntos de conformidad con las Normas Contables Profesionales Argentinas, y del control interno que considere necesario para permitir la preparación de estados contables libres de incorrección significativa, debida a fraude o error.\n\n"
+         f"En la preparación de los estados contables, la Dirección es responsable de la evaluación de la capacidad de {entity_name} para continuar como empresa en funcionamiento, revelando, en caso de corresponder, las cuestiones relacionadas con este aspecto y utilizando el principio contable de empresa en funcionamiento, excepto si la Dirección tuviera intención de liquidar la entidad o de cesar sus operaciones, o bien no existiera otra alternativa realista."),
+        ("Responsabilidades del auditor en relación con la auditoría de los estados contables",
+         "Mis objetivos son obtener una seguridad razonable de que los estados contables en su conjunto están libres de incorrección significativa, debida a fraude o error, y emitir un informe de auditoría que contenga mi opinión. Seguridad razonable es un alto grado de seguridad, pero no garantiza que una auditoría realizada de conformidad con la Resolución Técnica N° 37 de la FACPCE adoptada por la Resolución C.D. Nº 46/2021 del CPCECABA (y sus complementarias) siempre detecte una incorrección significativa cuando exista. Las incorrecciones pueden deberse a fraude o error y se consideran significativas si, individualmente o de forma agregada, puede preverse razonablemente que influyan en las decisiones económicas que los usuarios toman basándose en los estados contables.\n\n"
+         "Como parte de una auditoría de conformidad con la Resolución Técnica N° 37 de la FACPCE adoptada por la Resolución C.D. Nº 46/2021 del CPCECABA (y sus complementarias), aplico mi juicio profesional y mantengo una actitud de escepticismo profesional durante toda la auditoría. También:\n\n"
+         "a) Identifico y evalúo los riesgos de incorrección significativa en los estados contables, debida a fraude o error, diseño y aplico procedimientos de auditoría para responder a dichos riesgos y obtengo elementos de juicio suficientes y adecuados para proporcionar una base para mi opinión. El riesgo de no detectar una incorrección significativa debida a fraude es más elevado que en el caso de una incorrección significativa debida a error, ya que el fraude puede implicar colusión, falsificación, omisiones deliberadas, manifestaciones intencionadamente erróneas o la elusión del control interno.\n\n"
+         "b) Obtengo conocimiento del control interno relevante para la auditoría con el fin de diseñar procedimientos de auditoría que sean apropiados en función de las circunstancias y no con la finalidad de expresar una opinión sobre la eficacia del control interno de la entidad.\n\n"
+         "c) Evalúo si las políticas contables aplicadas son adecuadas, así como la razonabilidad de las estimaciones contables y la correspondiente información revelada por la Dirección de la entidad.\n\n"
+         "d) Concluyo sobre lo adecuado de la utilización por la Dirección, del principio contable de empresa en funcionamiento y, basándome en los elementos de juicio obtenidos, concluyo sobre si existe o no una incertidumbre significativa relacionada con hechos o con condiciones que pueden generar dudas importantes sobre la capacidad de la entidad para continuar como empresa en funcionamiento. Si concluyo que existe una incertidumbre significativa, se requiere que llame la atención en mi informe de auditoría sobre la información expuesta en los estados contables o, si dicha información expuesta no es adecuada, que exprese una opinión modificada. Mis conclusiones se basan en los elementos de juicio obtenidos hasta la fecha de mi informe de auditoría. Sin embargo, hechos o condiciones futuros pueden ser causa de que la entidad deje de ser una empresa en funcionamiento.\n\n"
+         "e) Evalúo la presentación general, la estructura y el contenido de los estados contables, incluida la información revelada, y si los estados contables representan las transacciones y hechos subyacentes de un modo que logren una presentación razonable.\n\n"
+         "f) Me comunico con la Dirección de la entidad en relación con, entre otras cuestiones, la estrategia general de la auditoría y los hallazgos significativos de la auditoría, así como cualquier deficiencia significativa del control interno identificada en el transcurso de la auditoría."),
         ("APARTADO II", "Informe sobre otros requerimientos legales y reglamentarios"),
-        ("a) REGISTROS CONTABLES LLEVADOS EN LEGAL FORMA",
-         "Con base en mi examen descripto en los puntos anteriores, informo que los estados contables citados surgen de registros contables llevados en sus aspectos formales de conformidad con las normas legales vigentes."),
-        ("b) DEUDA PREVISIONAL SIPA (ART. 10 LEY N° 17.250)",
-         f"Según surge de los registros contables de la Entidad (Nota 2.10), el pasivo devengado al {closing_date} a favor del Sistema Integrado Previsional Argentino (SIPA) en concepto de aportes y contribuciones previsionales ascendía a $ 23.963.846,93, no siendo exigible a esa fecha."),
+        ("a) Registros contables",
+         "Con base en mi examen descripto, informo que los estados contables citados surgen de registros contables llevados en sus aspectos formales de acuerdo con normas legales."),
+        ("b) Deuda previsional SIPA (Ley N° 17.250 Art. 10)",
+         f"Según surge de los registros contables de {entity_name}, el pasivo devengado al {closing_date} a favor del Sistema Integrado Previsional Argentino (SIPA) en concepto de aportes y contribuciones previsionales ascendía a $ {sipa_amount_str} y no era exigible a esa fecha."),
         ("LUGAR Y FECHA DE EMISIÓN",
-         f"Ciudad Autónoma de Buenos Aires, {cert_date}.\n\nFirmado: Dr./Dra. [Nombre y Apellido del Contador Público]\nContador Público (Universidad)\nC.P.C.E.C.A.B.A. T° .... F° ....")
+         f"Ciudad Autónoma de Buenos Aires, {cert_date}.\n\n\n............................................................\nDr./Dra. [Nombre y Apellido del Auditor]\nContador Público (Universidad)\nC.P.C.E.C.A.B.A. T° .... F° ....")
     ]
 
     # Render PDF in exact MICPROJECT Portrait + Landscape layout
@@ -1407,6 +1449,7 @@ def _build_micproject_pdf(
 
     # Estilos de lectura institucional centrados con margen lateral ampliado (Memoria, Notas, Revisores, Auditor)
     st_doc_body = ParagraphStyle("MP_DocBody", fontName=FONT_REG, fontSize=8.4, leading=12.6, textColor=colors.black, alignment=TA_JUSTIFY, leftIndent=14 * mm, rightIndent=14 * mm)
+    st_doc_body_indented = ParagraphStyle("MP_DocBodyInd", fontName=FONT_REG, fontSize=8.3, leading=12.0, textColor=colors.black, alignment=TA_JUSTIFY, leftIndent=20 * mm, rightIndent=14 * mm)
     st_doc_h2 = ParagraphStyle("MP_DocH2", fontName=FONT_BOLD, fontSize=9.2, leading=13.0, textColor=colors.HexColor("#0D1F3C"), alignment=TA_LEFT, leftIndent=14 * mm, rightIndent=14 * mm)
     st_doc_sec_title = ParagraphStyle("MP_DocSecTitle", fontName=FONT_BOLD, fontSize=8.3, leading=11.5, textColor=colors.HexColor("#0D1F3C"), alignment=TA_LEFT, leftIndent=14 * mm, rightIndent=14 * mm)
 
@@ -1929,8 +1972,15 @@ def _build_micproject_pdf(
             story.append(Paragraph(f"<b>{sec_label}</b>", st_doc_sec_title))
             story.append(Spacer(1, 1.0 * mm))
             for sub_p in p_text.split("\n"):
-                story.append(Paragraph(sub_p, st_doc_body))
-                story.append(Spacer(1, 1.8 * mm))
+                p_c = sub_p.strip()
+                if not p_c:
+                    continue
+                if re.match(r"^[a-z]\)", p_c):
+                    story.append(Paragraph(p_c, st_doc_body_indented))
+                    story.append(Spacer(1, 1.4 * mm))
+                else:
+                    story.append(Paragraph(p_c, st_doc_body))
+                    story.append(Spacer(1, 1.8 * mm))
             story.append(Spacer(1, 2.0 * mm))
 
     # ==================================================================
@@ -2470,13 +2520,16 @@ def _build_micproject_docx(
             r_h.font.name = "Arial"
             r_h.font.size = Pt(8.5)
             for sub_p in p_text.split("\n"):
-                if sub_p.strip():
+                p_c = sub_p.strip()
+                if p_c:
                     p_sub = d.add_paragraph()
                     p_sub.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
                     p_sub.paragraph_format.space_before = Pt(0)
-                    p_sub.paragraph_format.space_after = Pt(3)
+                    p_sub.paragraph_format.space_after = Pt(2.5)
                     p_sub.paragraph_format.line_spacing = 1.15
-                    r_sub = p_sub.add_run(sub_p.strip())
+                    if re.match(r"^[a-z]\)", p_c):
+                        p_sub.paragraph_format.left_indent = Mm(6)
+                    r_sub = p_sub.add_run(p_c)
                     r_sub.font.name = "Arial"
                     r_sub.font.size = Pt(8.5)
     _add_docx_auditor_firma(d, car)

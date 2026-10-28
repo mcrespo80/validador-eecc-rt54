@@ -286,7 +286,7 @@
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h2 class="text-base font-bold text-[#0D1F3C] mb-1">Tabla de Reclasificaciones y Nuevas Denominaciones RT 54 (NUA)</h2>
         <p class="text-xs text-slate-500 mb-4">
-          Cambios obligatorios de exposición bajo la Norma Unificada Argentina (salvo uso expreso de la dispensa transitoria Res. JG 660/2026):
+          Cambios obligatorios de exposición bajo la Norma Unificada Argentina (Res. P. N° 460/2024 CPCECABA):
         </p>
         <div id="reclasificaciones-list" class="space-y-3"></div>
       </div>
@@ -922,7 +922,7 @@
       const dispBadge = document.getElementById('notes-dispensa-badge');
       if (tni.uses_legacy_rubro_names) {
         dispBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300';
-        dispBadge.textContent = '✓ Dispensa Res. JG 660/2026 Activada (Conserva nombres tradicionales)';
+        dispBadge.textContent = '⚠ Reclasificaciones a NUA Requeridas (Res. P. 460/2024)';
       } else {
         dispBadge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300';
         dispBadge.textContent = '✓ Nomenclatura NUA Directa (RT 54)';
