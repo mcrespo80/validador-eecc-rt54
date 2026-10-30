@@ -944,20 +944,46 @@ def _parse_eecc_structured_data(
             f"COMISIÓN REVISORA DE CUENTAS / COMISIÓN FISCALIZADORA"
         )
 
-    memoria_default_texto = (
-        f"MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN\n\n"
-        f"Señores Asociados / Miembros:\n\n"
-        f"En cumplimiento de las disposiciones legales y estatutarias vigentes, el Órgano de Administración somete a vuestra consideración la Memoria, el Estado de Situación Patrimonial, el Estado de Recursos y Gastos (o Resultados), el Estado de Evolución del Patrimonio Neto, el Estado de Flujos de Efectivo, las Notas y los Anexos correspondientes al ejercicio económico finalizado el {closing_date}.\n\n"
-        f"1. Contexto Operativo y Normativo (RT 54 - T.O. RT 59):\n"
-        f"A lo largo del presente ejercicio económico, la Entidad ha desarrollado sus actividades procurando optimizar los recursos disponibles y dar acabado cumplimiento a su objeto social. En el plano técnico contable, los presentes estados contables han sido preparados conforme a la Resolución Técnica N° 54 (T.O. RT 59 - NUA) adoptada por el CPCECABA mediante la Res. P. N° 460/2024, en pesos en moneda homogénea de fecha de cierre ({closing_date}).\n\n"
-        f"2. Análisis Patrimonial y Económico:\n"
-        f"La gestión de ingresos y egresos ha permitido atender con solvencia las obligaciones corrientes y operativas de la Entidad. La evolución del Patrimonio Neto y las variaciones del efectivo reflejan el sostenimiento de las actividades prioritarias en beneficio de los representados.\n\n"
-        f"3. Proyecciones Futuras:\n"
-        f"Para el próximo ejercicio, continuaremos orientando la gestión al fortalecimiento financiero, la eficiencia en el uso de los fondos y la modernización de los procesos operativos.\n\n"
-        f"Expresamos nuestro sincero agradecimiento a todo el personal, asociados y asesores profesionales por su permanente colaboración y compromiso institucional.\n\n"
-        f"Ciudad Autónoma de Buenos Aires, {cert_date}.\n\n"
-        f"EL ÓRGANO DE ADMINISTRACIÓN"
-    )
+    # ------------------------------------------------------------------
+    # 8. DETECT MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN (IF PRESENT)
+    # ------------------------------------------------------------------
+    detected_memoria_paras = []
+    for p in pages:
+        p_txt = p.get("text", "")
+        p_up = p_txt.upper()
+        if "MEMORIA" in p_up and ("ÓRGANO DE ADMINISTRACIÓN" in p_up or "ORGANO DE ADMINISTRACION" in p_up or "CONSEJO DIRECTIVO" in p_up or "INFORME DE GESTIÓN" in p_up or "CONTEXTO SECTORIAL" in p_up or "SEÑORES AFILIADOS" in p_up or "SEÑORES ASOCIADOS" in p_up):
+            # Ignore pages that are only the auditor's report mentioning "otra información / memoria"
+            if "INFORME DEL AUDITOR" in p_up or "INFORME DE AUDITORÍA" in p_up or "INFORME DE AUDITORIA" in p_up:
+                continue
+            lines_p = [ln.strip() for ln in p_txt.splitlines() if ln.strip()]
+            filtered_p = []
+            for ln in lines_p:
+                ln_up = ln.upper()
+                if "PÁGINA" in ln_up or "PAGINA" in ln_up:
+                    continue
+                if ln.startswith("OSETYA") and "RNOS" in ln:
+                    continue
+                filtered_p.append(ln)
+            if filtered_p:
+                detected_memoria_paras.append("\n".join(filtered_p))
+
+    if detected_memoria_paras:
+        memoria_final_texto = "\n\n".join(detected_memoria_paras)
+    else:
+        memoria_final_texto = (
+            f"MEMORIA DEL ÓRGANO DE ADMINISTRACIÓN\n\n"
+            f"Señores Asociados / Miembros:\n\n"
+            f"En cumplimiento de las disposiciones legales y estatutarias vigentes, el Órgano de Administración somete a vuestra consideración la Memoria, el Estado de Situación Patrimonial, el Estado de Recursos y Gastos (o Resultados), el Estado de Evolución del Patrimonio Neto, el Estado de Flujos de Efectivo, las Notas y los Anexos correspondientes al ejercicio económico finalizado el {closing_date}.\n\n"
+            f"1. Contexto Operativo y Normativo (RT 54 - T.O. RT 59):\n"
+            f"A lo largo del presente ejercicio económico, la Entidad ha desarrollado sus actividades procurando optimizar los recursos disponibles y dar acabado cumplimiento a su objeto social. En el plano técnico contable, los presentes estados contables han sido preparados conforme a la Resolución Técnica N° 54 (T.O. RT 59 - NUA) adoptada por el CPCECABA mediante la Res. P. N° 460/2024, en pesos en moneda homogénea de fecha de cierre ({closing_date}).\n\n"
+            f"2. Análisis Patrimonial y Económico:\n"
+            f"La gestión de ingresos y egresos ha permitido atender con solvencia las obligaciones corrientes y operativas de la Entidad. La evolución del Patrimonio Neto y las variaciones del efectivo reflejan el sostenimiento de las actividades prioritarias en beneficio de los representados.\n\n"
+            f"3. Proyecciones Futuras:\n"
+            f"Para el próximo ejercicio, continuaremos orientando la gestión al fortalecimiento financiero, la eficiencia en el uso de los fondos y la modernización de los procesos operativos.\n\n"
+            f"Expresamos nuestro sincero agradecimiento a todo el personal, asociados y asesores profesionales por su permanente colaboración y compromiso institucional.\n\n"
+            f"Ciudad Autónoma de Buenos Aires, {cert_date}.\n\n"
+            f"EL ÓRGANO DE ADMINISTRACIÓN"
+        )
 
     # Extract potential firmantes from document text if present
     detected_presidente = None
@@ -1015,7 +1041,7 @@ def _parse_eecc_structured_data(
             "auditorMatricula": detected_matricula or "C.P.C.E.C.A.B.A. T° ... F° ...",
             "fechaCertificacion": cert_date
         },
-        "memoriaTexto": memoria_default_texto,
+        "memoriaTexto": memoria_final_texto,
         "informeRevisoresTexto": informe_revisores_texto,
         "esp": esp_data,
         "eerr": {
